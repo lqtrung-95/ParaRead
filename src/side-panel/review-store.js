@@ -26,6 +26,7 @@ export async function saveItem(type, card, analysis, word = "") {
   await chrome.storage.local.set({
     savedItems: [item, ...savedItems.filter((saved) => saved.id !== item.id)],
   });
+  return item;
 }
 
 function createSavedItem(item) {

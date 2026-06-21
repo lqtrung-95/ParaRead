@@ -122,7 +122,7 @@ function createVocabulary(card) {
   const wrapper = document.createElement("div");
   wrapper.className = "chips";
   (card.vocabulary || []).forEach((word) => {
-    const chip = createActionButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word));
+    const chip = createSaveButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word));
     chip.className = "chip chip-button";
     wrapper.append(chip);
   });
@@ -132,7 +132,7 @@ function createVocabulary(card) {
 function createSaveRow(card) {
   const row = document.createElement("div");
   row.className = "save-row";
-  row.append(createActionButton("Save sentence", () => saveItem("sentence", card, currentAnalysis)));
+  row.append(createSaveButton("Save sentence", () => saveItem("sentence", card, currentAnalysis)));
   return row;
 }
 
@@ -155,6 +155,28 @@ function createActionButton(label, onClick) {
   button.textContent = label;
   button.addEventListener("click", onClick);
   return button;
+}
+
+function createSaveButton(label, onClick) {
+  const button = createActionButton(label, async () => {
+    const originalLabel = button.textContent;
+    setSaveButtonState(button, "saving", "Saving...");
+    try {
+      await onClick();
+      setSaveButtonState(button, "saved", "Saved");
+      setTimeout(() => setSaveButtonState(button, "", originalLabel), 1400);
+    } catch {
+      setSaveButtonState(button, "error", "Save failed");
+      setTimeout(() => setSaveButtonState(button, "", originalLabel), 2200);
+    }
+  });
+  return button;
+}
+
+function setSaveButtonState(button, state, label) {
+  button.disabled = state === "saving";
+  button.dataset.state = state;
+  button.textContent = label;
 }
 
 function createBlock(className, text) {

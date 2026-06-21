@@ -120,6 +120,24 @@
   font-weight: 700;
 }
 
+.secondary-button[data-state="saving"],
+.chip-button[data-state="saving"] {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.secondary-button[data-state="saved"],
+.chip-button[data-state="saved"] {
+  background: #e8f6ef;
+  color: #1d6a42;
+}
+
+.secondary-button[data-state="error"],
+.chip-button[data-state="error"] {
+  background: #fae9e7;
+  color: #9b2f24;
+}
+
 .save-row {
   display: flex;
   gap: 8px;
