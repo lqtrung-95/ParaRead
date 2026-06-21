@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "ParaRead",
-  "description": "Parallel-text reader with grammar explanations for web articles.",
+  "name": "GrammarLens",
+  "description": "AI grammar microscope for real web articles.",
   "version": "0.1.0",
   "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
-    "default_title": "ParaRead"
+    "default_title": "GrammarLens"
   },
   "background": {
     "service_worker": "src/background/service-worker.js",

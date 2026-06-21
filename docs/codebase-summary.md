@@ -1,22 +1,20 @@
 # Codebase Summary
 
-ParaRead is a dependency-free Manifest V3 Chrome extension.
+GrammarLens is a dependency-free Manifest V3 Chrome extension.
 
 Core behavior:
 - Extract article text from semantic page regions.
-- Segment text into readable sentence cards.
+- Segment text into sentence-level grammar lenses.
 - Generate local grammar/vocabulary hints without a network dependency.
-- Optionally call DeepSeek's OpenAI-compatible chat endpoint for better translation and explanations.
-- Require the learner to choose or save a target language.
-- Side panel is the main app surface; extension icon opens it directly.
+- Optionally call DeepSeek's OpenAI-compatible chat endpoint for richer translation and explanations.
 - Let the learner choose source, translation, and explanation languages.
 - Grammar notes explain the translated target-language sentence in the learner's mother tongue.
-- CJK translations can include pronunciation readings such as pinyin.
+- Cards can show translation, pronunciation, original sentence, literal reading, pattern, explanation, examples, and vocabulary.
 - Side panel language fields use searchable dropdown controls.
 - Article extraction skips hidden content and AI-summary widgets.
-- Render translation-first cards in the side panel.
 - Hovering a card highlights the matching original paragraph.
 - Saved vocabulary and sentences are stored locally for review with article title and URL.
+- Vocabulary terms can be marked learning or known in local storage.
 
 Run:
 - `npm run check`

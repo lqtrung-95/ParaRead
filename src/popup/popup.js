@@ -45,6 +45,7 @@ analyzeButton.addEventListener("click", async () => {
     const result = await chrome.runtime.sendMessage({
       type: "PARAREAD_ANALYZE_ACTIVE_TAB",
       targetLanguage: targetLanguage.value.trim(),
+      explanationLanguage: explanationLanguage.value.trim(),
     });
     if (result?.ok) {
       setBusy(false, `${result.cardCount} reading cards ready.`);

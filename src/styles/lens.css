@@ -1,0 +1,98 @@
+.reader-insights {
+  color: #35545e;
+  font-size: 11px;
+  font-weight: 750;
+  margin-top: 8px;
+}
+
+.lens-details {
+  background: #fff9f2;
+  border: 1px solid #eed8c4;
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+}
+
+.grammar-pattern {
+  color: #8f4a17;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.literal-note {
+  color: #5d5960;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.literal-note:empty,
+.example-list:empty {
+  display: none;
+}
+
+.example-list {
+  display: grid;
+  gap: 4px;
+}
+
+.example-line {
+  color: #214f5e;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.term-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.term-pill {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.term-status-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #5c6168;
+  font-size: 11px;
+  padding: 3px 7px;
+}
+
+.term-status-button:hover {
+  background: #f4f0e8;
+  color: #202124;
+}
+
+.term-pill[data-status="learning"] .term-status-button[data-choice="learning"],
+.term-pill[data-status="known"] .term-status-button[data-choice="known"] {
+  background: #233f4a;
+  border-color: #233f4a;
+  color: #fff;
+}
+
+.review-status {
+  display: flex;
+  gap: 6px;
+}
+
+.review-status:empty {
+  display: none;
+}
+
+.review-status-button {
+  background: #f1f5f5;
+  color: #315766;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.review-status[data-status="learning"] .review-status-button[data-choice="learning"],
+.review-status[data-status="known"] .review-status-button[data-choice="known"] {
+  background: #233f4a;
+  color: #fff;
+}

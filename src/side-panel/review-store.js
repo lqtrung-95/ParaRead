@@ -1,10 +1,13 @@
+import { createWordStatusId, getWordStatusMap, setWordStatus } from "./learning-store.js";
+
 export async function renderSavedItems(container) {
   const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
   if (!savedItems.length) {
     container.innerHTML = `<section class="empty-state">Saved sentences and words will appear here.</section>`;
     return;
   }
-  container.replaceChildren(...savedItems.sort((a, b) => b.savedAt - a.savedAt).map(createSavedItem));
+  const wordStatuses = await getWordStatusMap();
+  container.replaceChildren(...savedItems.sort((a, b) => b.savedAt - a.savedAt).map((item) => createSavedItem(item, wordStatuses)));
 }
 
 export async function saveItem(type, card, analysis, word = "") {
@@ -41,7 +44,7 @@ export function createSavedItemId(type, text, url = "") {
   return `${type}:${text}:${url}`;
 }
 
-function createSavedItem(item) {
+function createSavedItem(item, wordStatuses) {
   const section = document.createElement("section");
   section.className = "sentence-card saved-card";
   section.append(
@@ -51,6 +54,7 @@ function createSavedItem(item) {
     createBlock("source-muted", item.context || ""),
     createBlock("grammar-note", item.grammar || ""),
     createSourceLink(item),
+    createReviewStatus(item, wordStatuses),
     createBlock("saved-date", formatSavedDate(item.savedAt)),
     createActionButton("Remove", () => removeItem(item.id)),
   );
@@ -76,6 +80,28 @@ function createSourceLink(item) {
   link.textContent = item.title ? `From: ${item.title}` : "Open article";
   wrapper.append(link);
   return wrapper;
+}
+
+function createReviewStatus(item, wordStatuses) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "review-status";
+  if (item.type !== "vocab") return wrapper;
+  const id = createWordStatusId(item.text, item.targetLanguage);
+  wrapper.dataset.status = wordStatuses[id] || "";
+  wrapper.append(
+    createStatusButton("learning", "Learning", item, wrapper),
+    createStatusButton("known", "Known", item, wrapper),
+  );
+  return wrapper;
+}
+
+function createStatusButton(status, label, item, wrapper) {
+  const button = createActionButton(label, async () => {
+    wrapper.dataset.status = await setWordStatus(item.text, item.targetLanguage, status);
+  });
+  button.classList.add("review-status-button");
+  button.dataset.choice = status;
+  return button;
 }
 
 function createActionButton(label, onClick) {

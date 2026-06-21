@@ -1,10 +1,12 @@
 import { attachLanguageSelector } from "./language-selector.js";
-import { createSaveButton } from "./save-feedback.js";
-import { createSavedItemId, getSavedItemIds, renderSavedItems, saveItem } from "./review-store.js";
+import { getWordStatusMap, summarizeLearningState } from "./learning-store.js";
+import { createReaderCard } from "./reader-card.js";
+import { getSavedItemIds, renderSavedItems } from "./review-store.js";
 
 const title = document.querySelector("#title");
 const meta = document.querySelector("#meta");
 const cards = document.querySelector("#cards");
+const readerInsights = document.querySelector("#reader-insights");
 const readTab = document.querySelector("#read-tab");
 const reviewTab = document.querySelector("#review-tab");
 const analyzeButton = document.querySelector("#analyze-button");
@@ -31,7 +33,7 @@ analyzeButton.addEventListener("click", analyzeArticle);
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "session" && Object.keys(changes).some((key) => key.startsWith("analysis:"))) render();
-  if (area === "local" && changes.savedItems) {
+  if (area === "local" && (changes.savedItems || changes.wordStatuses)) {
     if (currentView === "review") renderSavedItems(cards);
     else renderCards();
   }
@@ -76,13 +78,15 @@ async function analyzeArticle() {
 async function render() {
   currentAnalysis = await chrome.runtime.sendMessage({ type: "PARAREAD_GET_ANALYSIS" });
   if (!currentAnalysis) {
-    title.textContent = "ParaRead";
+    title.textContent = "GrammarLens";
     meta.textContent = "Set languages, then analyze the current article.";
+    readerInsights.textContent = "Read real articles with sentence-level grammar lenses.";
     if (currentView === "read") cards.innerHTML = `<section class="empty-state">No analysis yet.</section>`;
     return;
   }
-  title.textContent = currentAnalysis.title || "ParaRead";
+  title.textContent = currentAnalysis.title || "GrammarLens";
   meta.textContent = `${currentAnalysis.sourceLanguage || "Auto"} → ${currentAnalysis.targetLanguage || "target"} · grammar in ${currentAnalysis.explanationLanguage || "target"} · ${currentAnalysis.generatedBy || "local"}`;
+  await renderInsights();
   if (currentView === "review") await renderSavedItems(cards);
   else await renderCards();
 }
@@ -98,52 +102,21 @@ async function switchView(view) {
 async function renderCards() {
   if (!currentAnalysis) return;
   const savedIds = await getSavedItemIds();
-  cards.replaceChildren(...currentAnalysis.cards.map((card, index) => createCard(card, index, savedIds)));
+  const wordStatuses = await getWordStatusMap();
+  const context = {
+    analysis: currentAnalysis,
+    highlightSource,
+    onWordStatusChange: renderInsights,
+    savedIds,
+    wordStatuses,
+  };
+  cards.replaceChildren(...currentAnalysis.cards.map((card, index) => createReaderCard(card, index, context)));
 }
 
-function createCard(card, index, savedIds) {
-  const section = document.createElement("section");
-  section.className = "sentence-card reader-card";
-  section.addEventListener("mouseenter", () => highlightSource(card.source, true));
-  section.addEventListener("mouseleave", () => highlightSource(card.source, false));
-  section.append(
-    createBlock("card-topline", `Sentence ${index + 1}`),
-    createBlock("parallel primary-text", card.parallel),
-    createPronunciation(card.pronunciation),
-    createBlock("source source-muted", card.source),
-    createBlock("grammar grammar-note", card.grammar),
-    createVocabulary(card, savedIds),
-    createSaveRow(card, savedIds),
-  );
-  return section;
-}
-
-function createPronunciation(pronunciation) {
-  const element = createBlock("pronunciation", pronunciation);
-  element.hidden = !pronunciation;
-  return element;
-}
-
-function createVocabulary(card, savedIds) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "chips";
-  (card.vocabulary || []).forEach((word) => {
-    const saved = savedIds.has(createSavedItemId("vocab", word, currentAnalysis?.url || ""));
-    wrapper.append(createSaveButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word), {
-      className: "chip chip-button",
-      saved,
-      savedLabel: `Saved ${word}`,
-    }));
-  });
-  return wrapper;
-}
-
-function createSaveRow(card, savedIds) {
-  const row = document.createElement("div");
-  row.className = "save-row";
-  const saved = savedIds.has(createSavedItemId("sentence", card.source, currentAnalysis?.url || ""));
-  row.append(createSaveButton("Save sentence", () => saveItem("sentence", card, currentAnalysis), { saved }));
-  return row;
+async function renderInsights() {
+  if (!currentAnalysis) return;
+  const stats = summarizeLearningState(currentAnalysis, await getWordStatusMap());
+  readerInsights.textContent = `${stats.sentences} sentences · ${stats.terms} focus terms · ${stats.learning} learning · ${stats.known} known`;
 }
 
 function renderLoading() {

@@ -2,22 +2,23 @@
 
 ## Now
 - Chrome extension MVP
-- Local fallback grammar explanations
+- GrammarLens product surface
 - OpenAI-compatible provider settings
-- User-configurable target language
-- User-configurable explanation language
-- Sidebar-only setup and analysis flow
-- Translation-first side panel with source highlighting
+- User-configurable target and explanation languages
+- Translation-first grammar lens cards
+- Literal reading, pattern label, grammar note, examples, and vocabulary
 - Local saved vocabulary and sentence review
+- Lightweight learning/known word status
 
 ## Next
-- Known-word tracking with review scheduling
+- Review scheduling for learning terms
 - Saved article library
-- Sentence audio
+- Inline paragraph lens mode
 - Provider presets
 - Better extraction with Readability-style scoring
 
 ## Later
 - Sync across devices
 - Browser extension store package
+- Sentence audio and shadowing mode
 - Mobile reader

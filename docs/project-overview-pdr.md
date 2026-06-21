@@ -1,38 +1,40 @@
-# ParaRead Product Requirements
+# GrammarLens Product Requirements
 
 ## Problem
-Language learners can open authentic articles but lose time switching between translation, grammar lookup, and sentence context.
+Language learners can read authentic articles, but translation alone does not explain why a sentence is built that way.
 
 ## MVP
-Chrome extension that extracts article text from the active page, opens a side panel, and renders sentence-level reading cards with:
-- original sentence
-- parallel translation or learning paraphrase
-- grammar note in context
-- vocabulary hints
+Chrome extension that extracts article text from the active page and renders sentence-level grammar lenses with:
+- target-language translation
+- pronunciation for CJK/Japanese/Korean when useful
+- original source sentence
+- literal or structure-preserving reading
+- grammar pattern and explanation in the learner's mother tongue
+- short pattern examples
+- vocabulary terms with saved, learning, and known states
 
 ## Scope
 - Manifest V3 unpacked extension
 - Configurable OpenAI-compatible LLM provider
 - DeepSeek `deepseek-v4-flash` as cost-efficient default provider/model
-- Sidebar-only analysis flow
-- User-configurable source article language
-- User-configurable target translation language
-- User-configurable mother tongue for grammar explanations
+- Sidebar-first analysis flow
+- User-configurable source, target, and explanation languages
 - Local fallback analysis when no API key configured
 - Article extraction from common semantic HTML
+- Local saved vocabulary and sentence review
+- Lightweight known-word tracking
 
 ## Out Of Scope
 - User accounts
-- Saved library
 - Billing
-- Full LingQ-style known-word tracking
+- Full LingQ-style course system
 - Server backend
 
 ## Acceptance
 - Extension loads unpacked in Chrome
-- Popup can analyze active article
-- Side panel displays analysis
-- Options page stores provider settings locally
-- First analysis asks for target language if none configured
+- Extension icon opens the side panel
+- Side panel analyzes the active article
+- Cards show grammar lens fields when provider returns them
 - Review saves include article title and URL
+- Saved vocabulary can be marked learning or known
 - Tests cover extraction and local analysis

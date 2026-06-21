@@ -25,7 +25,10 @@ export function buildLocalAnalysis(article, targetLanguage = "your target langua
       source: sentence,
       parallel: buildLearningParaphrase(sentence, targetLanguage),
       pronunciation: "",
+      literal: "",
+      pattern: pickGrammarPattern(sentence),
       grammar: buildLocalGrammarNote(sentence, explanationLanguage),
+      examples: [],
       vocabulary: pickVocabulary(sentence),
     })),
   };
@@ -54,8 +57,8 @@ export function createGrammarRepairPrompt(analysis, targetLanguage, explanationL
     `Explain the grammar of the translated ${targetLanguage} sentence in ${explanationLanguage}.`,
     `For Vietnamese explanations, use natural Vietnamese with diacritics.`,
     `Example: "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
-    `Keep source, parallel, pronunciation, and vocabulary unchanged.`,
-    `Return strict JSON with the same shape: {"cards":[{"source":"","parallel":"","pronunciation":"","grammar":"","vocabulary":[""]}]}.`,
+    `Keep source, parallel, pronunciation, literal, pattern, examples, and vocabulary unchanged.`,
+    `Return strict JSON with the same shape: {"cards":[{"source":"","parallel":"","pronunciation":"","literal":"","pattern":"","grammar":"","examples":[""],"vocabulary":[""]}]}.`,
     JSON.stringify({ cards: analysis.cards || [] }),
   ].join("\n\n");
 }
@@ -92,21 +95,28 @@ function hasVietnameseExplanation(value) {
 export function createProviderPrompt(article, targetLanguage, explanationLanguage = targetLanguage, sourceLanguage = "Auto") {
   const sample = splitSentences(article.text, MAX_ANALYSIS_SENTENCES).join("\n");
   return [
-    `You are ParaRead, a concise language-learning reader.`,
+    `You are GrammarLens, a grammar microscope for real web articles.`,
     `Source article language: ${sourceLanguage}. If Auto, infer it from the source sentences only.`,
     `Translate every "parallel" field into exactly this language: ${targetLanguage}.`,
+    `Write "literal" as a compact word-by-word or structure-preserving reading of the ${targetLanguage} sentence.`,
+    `Write "pattern" as a short label for the most useful ${targetLanguage} grammar pattern in the sentence.`,
     `Write every "grammar" field in exactly this language: ${explanationLanguage}.`,
     `The "grammar" field must explain grammar, particles, word order, or phrasing in the ${targetLanguage} translation, not grammar in the source article sentence.`,
     `If ${explanationLanguage} is Vietnamese, write natural Vietnamese with diacritics, e.g. "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
     `The "vocabulary" array must contain useful words or phrases from the ${targetLanguage} translation, not from the source article sentence.`,
+    `The "examples" array must contain up to 2 short ${targetLanguage} examples that reuse the same pattern.`,
     `Add "pronunciation" for target languages with useful readings: Chinese = pinyin with tone marks, Japanese = kana or romaji reading, Korean = romanization. Otherwise use "".`,
     `Do not translate the "parallel" field into ${explanationLanguage} unless it is also the target language.`,
     `Do not write the "grammar" field in ${targetLanguage} unless it is also the explanation language.`,
-    `Return strict JSON: {"cards":[{"source":"","parallel":"","pronunciation":"","grammar":"","vocabulary":[""]}]}.`,
+    `Return strict JSON: {"cards":[{"source":"","parallel":"","pronunciation":"","literal":"","pattern":"","grammar":"","examples":[""],"vocabulary":[""]}]}.`,
     `Translate naturally, explain the translated sentence in context, and keep each grammar note under 22 words in ${explanationLanguage}.`,
     `Article title: ${article.title}`,
     `Sentences:\n${sample}`,
   ].join("\n\n");
+}
+
+function pickGrammarPattern(sentence) {
+  return PATTERNS.find((pattern) => pattern.re.test(sentence))?.note.split(":")[0] || "Main clause";
 }
 
 function buildLocalGrammarNote(sentence, explanationLanguage) {

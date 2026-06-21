@@ -18,6 +18,8 @@ test("buildLocalAnalysis creates sentence cards with grammar notes", () => {
   assert.equal(analysis.cards.length, 2);
   assert.match(analysis.cards[0].grammar, /Contrast/);
   assert.match(analysis.cards[1].grammar, /Passive/);
+  assert.equal(analysis.cards[0].pattern, "Contrast marker");
+  assert.deepEqual(analysis.cards[0].examples, []);
 });
 
 test("createProviderPrompt requests strict JSON", () => {
@@ -29,7 +31,10 @@ test("createProviderPrompt requests strict JSON", () => {
   assert.match(prompt, /Return strict JSON/);
   assert.match(prompt, /Source article language: English/);
   assert.match(prompt, /parallel" field into exactly this language: Chinese/);
+  assert.match(prompt, /literal" as a compact word-by-word/);
+  assert.match(prompt, /pattern" as a short label/);
   assert.match(prompt, /grammar" field in exactly this language: Vietnamese/);
+  assert.match(prompt, /examples" array must contain up to 2 short Chinese examples/);
   assert.match(prompt, /Chinese = pinyin with tone marks/);
   assert.match(prompt, /"pronunciation"/);
   assert.match(prompt, /explain grammar, particles, word order, or phrasing in the Chinese translation/);
@@ -87,6 +92,6 @@ test("createGrammarRepairPrompt preserves translated grammar intent", () => {
   }, "Chinese", "Vietnamese");
 
   assert.match(prompt, /Rewrite only the "grammar" fields/);
-  assert.match(prompt, /Keep source, parallel, pronunciation, and vocabulary unchanged/);
+  assert.match(prompt, /Keep source, parallel, pronunciation, literal, pattern, examples, and vocabulary unchanged/);
   assert.match(prompt, /看似\.\.\.的" biểu thị một sự suy đoán không chắc chắn/);
 });
