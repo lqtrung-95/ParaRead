@@ -1,0 +1,81 @@
+.reader-tabs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 14px;
+}
+
+.tab-button,
+.secondary-button {
+  background: #eef4f5;
+  color: #1f5867;
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.tab-button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.reader-card {
+  gap: 8px;
+  transition: border 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.reader-card:hover {
+  border-color: rgba(23, 107, 135, 0.45);
+  box-shadow: 0 8px 22px rgba(38, 54, 64, 0.10);
+  transform: translateY(-1px);
+}
+
+.card-topline {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.primary-text {
+  color: #123f4d;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.source-muted {
+  color: #5c6168;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.grammar-note {
+  border-left: 3px solid var(--warm);
+  color: #6a4428;
+  font-size: 12px;
+  padding-left: 9px;
+}
+
+.chip-button {
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.save-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.saved-card {
+  gap: 8px;
+}
+
+.empty-state {
+  background: #fff;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 18px;
+}

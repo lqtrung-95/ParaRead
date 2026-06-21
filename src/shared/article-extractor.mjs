@@ -6,7 +6,7 @@ export function normalizeWhitespace(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
-export function splitSentences(text, maxSentences = 18) {
+export function splitSentences(text, maxSentences = 60) {
   const normalized = normalizeWhitespace(text);
   if (!normalized) return [];
   const matches = normalized.match(/[^.!?。！？]+[.!?。！？]+(?:["'”’])?|[^.!?。！？]+$/g) || [];

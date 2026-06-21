@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../styles/app.css">
+    <link rel="stylesheet" href="../styles/reader.css">
     <title>ParaRead Reader</title>
   </head>
   <body>
@@ -15,6 +16,10 @@
           <div id="meta" class="muted">Analyze an article from the popup.</div>
         </div>
       </section>
+      <nav class="reader-tabs" aria-label="Reader views">
+        <button id="read-tab" class="tab-button active" type="button">Read</button>
+        <button id="review-tab" class="tab-button" type="button">Review</button>
+      </nav>
     </header>
     <main id="cards" class="card-list"></main>
     <script type="module" src="./side-panel.js"></script>

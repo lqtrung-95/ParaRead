@@ -8,6 +8,9 @@ Core behavior:
 - Generate local grammar/vocabulary hints without a network dependency.
 - Optionally call DeepSeek's OpenAI-compatible chat endpoint for better translation and explanations.
 - Require the learner to choose or save a target language.
+- Render translation-first cards in the side panel.
+- Hovering a card highlights the matching original paragraph.
+- Saved vocabulary and sentences are stored locally for review.
 
 Run:
 - `npm run check`

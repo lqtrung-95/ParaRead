@@ -41,3 +41,10 @@ test("parseProviderCards accepts fenced JSON responses", () => {
 
   assert.equal(analysis.cards[0].parallel, "B");
 });
+
+test("buildLocalAnalysis keeps long articles instead of stopping at the first screen", () => {
+  const text = Array.from({ length: 55 }, (_, index) => `Sentence number ${index + 1} has enough detail.`).join(" ");
+  const analysis = buildLocalAnalysis({ title: "Long", text });
+
+  assert.equal(analysis.cards.length, 48);
+});

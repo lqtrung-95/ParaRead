@@ -5,9 +5,11 @@
 - Local fallback grammar explanations
 - OpenAI-compatible provider settings
 - User-configurable target language
+- Translation-first side panel with source highlighting
+- Local saved vocabulary and sentence review
 
 ## Next
-- Known-word tracking
+- Known-word tracking with review scheduling
 - Saved article library
 - Sentence audio
 - Provider presets

@@ -1,5 +1,7 @@
 import { splitSentences } from "./article-extractor.mjs";
 
+const MAX_ANALYSIS_SENTENCES = 48;
+
 const PATTERNS = [
   { re: /\b(was|were|is|are|been|being)\s+\w+(ed|en|itten|own|ade|uilt)\b/i, note: "Passive voice: focus is on what happened, not who did it." },
   { re: /\b(if|unless|provided that|as long as)\b/i, note: "Conditional clause: this sentence sets a condition before the main idea." },
@@ -16,7 +18,7 @@ export function buildLocalAnalysis(article, targetLanguage = "your target langua
     url: article.url,
     targetLanguage,
     generatedBy: "local",
-    cards: sentences.slice(0, 12).map((sentence, index) => ({
+    cards: sentences.slice(0, MAX_ANALYSIS_SENTENCES).map((sentence, index) => ({
       id: `s-${index + 1}`,
       source: sentence,
       parallel: buildLearningParaphrase(sentence, targetLanguage),
@@ -46,7 +48,7 @@ function extractJson(rawText) {
 }
 
 export function createProviderPrompt(article, targetLanguage) {
-  const sample = splitSentences(article.text, 12).join("\n");
+  const sample = splitSentences(article.text, MAX_ANALYSIS_SENTENCES).join("\n");
   return [
     `You are ParaRead, a concise language-learning reader.`,
     `Target language for explanations and translations: ${targetLanguage}.`,

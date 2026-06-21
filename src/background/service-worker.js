@@ -21,6 +21,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     respondSafely(sendResponse, () => getLatestAnalysis(sender.tab?.id));
     return true;
   }
+  if (message?.type === "PARAREAD_HIGHLIGHT_SOURCE") {
+    respondSafely(sendResponse, () => highlightSource(message.source, message.active));
+    return true;
+  }
   return false;
 });
 
@@ -82,7 +86,7 @@ async function analyzeWithProvider(article, settings, targetLanguage) {
       model: settings.model,
       thinking: { type: "disabled" },
       response_format: { type: "json_object" },
-      max_tokens: 3500,
+      max_tokens: 12000,
       messages: [{ role: "user", content: createProviderPrompt(article, targetLanguage) }],
     }),
   }).finally(() => clearTimeout(timeoutId));
@@ -103,6 +107,13 @@ async function getLatestAnalysis(tabId) {
   const key = `analysis:${tabId || latestTabId}`;
   const data = await chrome.storage.session.get(key);
   return data[key] || null;
+}
+
+async function highlightSource(source, active) {
+  const { latestTabId } = await chrome.storage.session.get("latestTabId");
+  if (!latestTabId) return { ok: false };
+  await chrome.tabs.sendMessage(latestTabId, { type: "PARAREAD_HIGHLIGHT_SOURCE", source, active });
+  return { ok: true };
 }
 
 async function openSidePanel(tabId) {
