@@ -24,20 +24,34 @@ analyzeButton.addEventListener("click", async () => {
     targetLanguage.focus();
     return;
   }
-  setBusy(true, "Extracting article...");
-  const result = await chrome.runtime.sendMessage({
-    type: "PARAREAD_ANALYZE_ACTIVE_TAB",
-    targetLanguage: targetLanguage.value.trim(),
-  });
-  if (result?.ok) {
-    setBusy(false, `${result.cardCount} reading cards ready.`);
-    window.close();
-    return;
+  setBusy(true, "Extracting and analyzing article...");
+  try {
+    await openSidePanel();
+    const result = await chrome.runtime.sendMessage({
+      type: "PARAREAD_ANALYZE_ACTIVE_TAB",
+      targetLanguage: targetLanguage.value.trim(),
+    });
+    if (result?.ok) {
+      setBusy(false, `${result.cardCount} reading cards ready.`);
+      window.close();
+      return;
+    }
+    setBusy(false, result?.error || "Analysis failed.");
+  } catch (error) {
+    setBusy(false, error?.message || "Analysis failed.");
   }
-  setBusy(false, result?.error || "Analysis failed.");
 });
 
 function setBusy(isBusy, message) {
   analyzeButton.disabled = isBusy;
   statusText.textContent = message;
+}
+
+async function openSidePanel() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) await chrome.sidePanel.open({ tabId: tab.id });
+  } catch {
+    // Non-blocking: service worker still stores results, and unsupported pages return a visible error.
+  }
 }

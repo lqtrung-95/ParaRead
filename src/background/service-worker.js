@@ -14,15 +14,23 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "PARAREAD_ANALYZE_ACTIVE_TAB") {
-    analyzeActiveTab(message.targetLanguage).then(sendResponse);
+    respondSafely(sendResponse, () => analyzeActiveTab(message.targetLanguage));
     return true;
   }
   if (message?.type === "PARAREAD_GET_ANALYSIS") {
-    getLatestAnalysis(sender.tab?.id).then(sendResponse);
+    respondSafely(sendResponse, () => getLatestAnalysis(sender.tab?.id));
     return true;
   }
   return false;
 });
+
+async function respondSafely(sendResponse, action) {
+  try {
+    sendResponse(await action());
+  } catch (error) {
+    sendResponse({ ok: false, error: getErrorMessage(error) });
+  }
+}
 
 async function analyzeActiveTab(targetLanguageOverride) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -47,7 +55,7 @@ async function analyzeActiveTab(targetLanguageOverride) {
     latestTabId: tab.id,
     [`analysis:${tab.id}`]: { ...analysis, createdAt: Date.now() },
   });
-  await chrome.sidePanel.open({ tabId: tab.id });
+  await openSidePanel(tab.id);
   return { ok: true, cardCount: analysis.cards.length, generatedBy: analysis.generatedBy };
 }
 
@@ -61,8 +69,11 @@ async function extractFromTab(tabId) {
 }
 
 async function analyzeWithProvider(article, settings, targetLanguage) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
   const response = await fetch(settings.providerUrl, {
     method: "POST",
+    signal: controller.signal,
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${settings.apiKey}`,
@@ -74,11 +85,17 @@ async function analyzeWithProvider(article, settings, targetLanguage) {
       max_tokens: 3500,
       messages: [{ role: "user", content: createProviderPrompt(article, targetLanguage) }],
     }),
-  });
-  if (!response.ok) return buildLocalAnalysis(article, targetLanguage);
-  const data = await response.json();
-  const text = data.choices?.[0]?.message?.content || "";
-  return { ...parseProviderCards(text, article, targetLanguage), generatedBy: "provider" };
+  }).finally(() => clearTimeout(timeoutId));
+  if (!response.ok) {
+    return { ...buildLocalAnalysis(article, targetLanguage), providerError: `Provider returned ${response.status}.` };
+  }
+  try {
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    return { ...parseProviderCards(text, article, targetLanguage), generatedBy: "provider" };
+  } catch {
+    return { ...buildLocalAnalysis(article, targetLanguage), providerError: "Provider returned invalid JSON." };
+  }
 }
 
 async function getLatestAnalysis(tabId) {
@@ -86,4 +103,17 @@ async function getLatestAnalysis(tabId) {
   const key = `analysis:${tabId || latestTabId}`;
   const data = await chrome.storage.session.get(key);
   return data[key] || null;
+}
+
+async function openSidePanel(tabId) {
+  try {
+    await chrome.sidePanel.open({ tabId });
+  } catch {
+    await chrome.sidePanel.setOptions({ tabId, path: "src/side-panel/side-panel.html", enabled: true });
+  }
+}
+
+function getErrorMessage(error) {
+  if (error?.name === "AbortError") return "Provider request timed out. Check API key/network, or clear the API key to use local mode.";
+  return error?.message || "Analysis failed.";
 }

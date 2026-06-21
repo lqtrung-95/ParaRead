@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildLocalAnalysis, createProviderPrompt } from "../src/shared/analysis-engine.mjs";
+import { buildLocalAnalysis, createProviderPrompt, parseProviderCards } from "../src/shared/analysis-engine.mjs";
 
 test("buildLocalAnalysis creates sentence cards with grammar notes", () => {
   const analysis = buildLocalAnalysis({
@@ -31,4 +31,13 @@ test("buildLocalAnalysis does not force a specific default target language", () 
   });
 
   assert.equal(analysis.targetLanguage, "your target language");
+});
+
+test("parseProviderCards accepts fenced JSON responses", () => {
+  const analysis = parseProviderCards('```json\n{"cards":[{"source":"A","parallel":"B","grammar":"C","vocabulary":[]}]}\n```', {
+    title: "Fallback",
+    text: "Fallback sentence.",
+  }, "Vietnamese");
+
+  assert.equal(analysis.cards[0].parallel, "B");
 });
