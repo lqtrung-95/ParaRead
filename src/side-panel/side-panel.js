@@ -1,42 +1,90 @@
+import { renderSavedItems, saveItem } from "./review-store.js";
+
 const title = document.querySelector("#title");
 const meta = document.querySelector("#meta");
 const cards = document.querySelector("#cards");
 const readTab = document.querySelector("#read-tab");
 const reviewTab = document.querySelector("#review-tab");
+const analyzeButton = document.querySelector("#analyze-button");
+const statusText = document.querySelector("#status");
+const sourceLanguage = document.querySelector("#source-language");
+const targetLanguage = document.querySelector("#target-language");
+const explanationLanguage = document.querySelector("#explanation-language");
 
 let currentAnalysis = null;
 let currentView = "read";
 
-render();
+init();
+
+async function init() {
+  await loadSettings();
+  await render();
+}
 
 readTab.addEventListener("click", () => switchView("read"));
 reviewTab.addEventListener("click", () => switchView("review"));
+analyzeButton.addEventListener("click", analyzeArticle);
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "session" && Object.keys(changes).some((key) => key.startsWith("analysis:"))) render();
-  if (area === "local" && changes.savedItems && currentView === "review") renderSavedItems();
+  if (area === "local" && changes.savedItems && currentView === "review") renderSavedItems(cards);
 });
+
+async function loadSettings() {
+  const settings = await chrome.storage.local.get({
+    sourceLanguage: "Auto",
+    targetLanguage: "",
+    explanationLanguage: "",
+    apiKey: "",
+  });
+  sourceLanguage.value = settings.sourceLanguage || "Auto";
+  targetLanguage.value = settings.targetLanguage || "";
+  explanationLanguage.value = settings.explanationLanguage || settings.targetLanguage || "";
+  statusText.textContent = settings.apiKey ? "Provider ready" : "Local mode: add API key in Settings for full translation.";
+}
+
+async function analyzeArticle() {
+  const source = sourceLanguage.value.trim() || "Auto";
+  const target = targetLanguage.value.trim();
+  const explanation = explanationLanguage.value.trim();
+  if (!target || !explanation) {
+    statusText.textContent = "Choose translate and explanation languages.";
+    return;
+  }
+  setBusy(true);
+  renderLoading();
+  const result = await chrome.runtime.sendMessage({
+    type: "PARAREAD_ANALYZE_ACTIVE_TAB",
+    sourceLanguage: source,
+    targetLanguage: target,
+    explanationLanguage: explanation,
+  });
+  if (!result?.ok) {
+    statusText.textContent = result?.error || "Analysis failed.";
+    cards.innerHTML = `<section class="empty-state">${statusText.textContent}</section>`;
+  }
+  setBusy(false);
+}
 
 async function render() {
   currentAnalysis = await chrome.runtime.sendMessage({ type: "PARAREAD_GET_ANALYSIS" });
   if (!currentAnalysis) {
-    cards.innerHTML = `<section class="empty-state">Open ParaRead from the toolbar and analyze an article.</section>`;
+    title.textContent = "ParaRead";
+    meta.textContent = "Set languages, then analyze the current article.";
+    if (currentView === "read") cards.innerHTML = `<section class="empty-state">No analysis yet.</section>`;
     return;
   }
   title.textContent = currentAnalysis.title || "ParaRead";
-  meta.textContent = `${currentAnalysis.targetLanguage || "Target language"} · grammar in ${currentAnalysis.explanationLanguage || currentAnalysis.targetLanguage || "target language"} · ${currentAnalysis.generatedBy || "local"}`;
-  if (currentView === "review") {
-    await renderSavedItems();
-    return;
-  }
-  renderCards();
+  meta.textContent = `${currentAnalysis.sourceLanguage || "Auto"} → ${currentAnalysis.targetLanguage || "target"} · grammar in ${currentAnalysis.explanationLanguage || "target"} · ${currentAnalysis.generatedBy || "local"}`;
+  if (currentView === "review") await renderSavedItems(cards);
+  else renderCards();
 }
 
 function switchView(view) {
   currentView = view;
   readTab.classList.toggle("active", view === "read");
   reviewTab.classList.toggle("active", view === "review");
-  if (view === "review") renderSavedItems();
+  if (view === "review") renderSavedItems(cards);
   else renderCards();
 }
 
@@ -51,7 +99,7 @@ function createCard(card, index) {
   section.addEventListener("mouseenter", () => highlightSource(card.source, true));
   section.addEventListener("mouseleave", () => highlightSource(card.source, false));
   section.append(
-    createCardHeader(index),
+    createBlock("card-topline", `Sentence ${index + 1}`),
     createBlock("parallel primary-text", card.parallel),
     createBlock("source source-muted", card.source),
     createBlock("grammar grammar-note", card.grammar),
@@ -61,82 +109,34 @@ function createCard(card, index) {
   return section;
 }
 
-function createCardHeader(index) {
-  const row = document.createElement("div");
-  row.className = "card-topline";
-  row.textContent = `Sentence ${index + 1}`;
-  return row;
-}
-
-function createSaveRow(card) {
-  const row = document.createElement("div");
-  row.className = "save-row";
-  row.append(createActionButton("Save sentence", () => saveItem("sentence", card)));
-  return row;
-}
-
 function createVocabulary(card) {
   const wrapper = document.createElement("div");
   wrapper.className = "chips";
   (card.vocabulary || []).forEach((word) => {
-    const chip = document.createElement("button");
+    const chip = createActionButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word));
     chip.className = "chip chip-button";
-    chip.type = "button";
-    chip.textContent = `+ ${word}`;
-    chip.title = "Save vocabulary";
-    chip.addEventListener("click", () => saveItem("vocab", card, word));
     wrapper.append(chip);
   });
   return wrapper;
 }
 
-async function renderSavedItems() {
-  const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
-  if (!savedItems.length) {
-    cards.innerHTML = `<section class="empty-state">Saved sentences and words will appear here.</section>`;
-    return;
-  }
-  cards.replaceChildren(...savedItems.sort((a, b) => b.savedAt - a.savedAt).map(createSavedItem));
+function createSaveRow(card) {
+  const row = document.createElement("div");
+  row.className = "save-row";
+  row.append(createActionButton("Save sentence", () => saveItem("sentence", card, currentAnalysis)));
+  return row;
 }
 
-function createSavedItem(item) {
-  const section = document.createElement("section");
-  section.className = "sentence-card saved-card";
-  section.append(
-    createBlock("card-topline", item.type === "vocab" ? "Vocabulary" : "Sentence"),
-    createBlock("primary-text", item.text),
-    createBlock("source-muted", item.context || ""),
-    createBlock("grammar-note", item.grammar || ""),
-    createSourceLink(item),
-    createBlock("saved-date", formatSavedDate(item.savedAt)),
-    createActionButton("Remove", () => removeItem(item.id)),
-  );
-  return section;
+function renderLoading() {
+  switchView("read");
+  title.textContent = "Analyzing article...";
+  meta.textContent = `${sourceLanguage.value || "Auto"} → ${targetLanguage.value} · grammar in ${explanationLanguage.value}`;
+  cards.replaceChildren(...Array.from({ length: 4 }, () => createBlock("sentence-card loading-card", "")));
 }
 
-async function saveItem(type, card, word = "") {
-  const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
-  const text = type === "vocab" ? word : card.source;
-  const item = {
-    id: `${type}:${text}:${currentAnalysis?.url || ""}`,
-    type,
-    text,
-    context: type === "vocab" ? card.source : card.parallel,
-    grammar: card.grammar,
-    url: currentAnalysis?.url || "",
-    title: currentAnalysis?.title || "",
-    targetLanguage: currentAnalysis?.targetLanguage || "",
-    explanationLanguage: currentAnalysis?.explanationLanguage || "",
-    savedAt: Date.now(),
-  };
-  await chrome.storage.local.set({
-    savedItems: [item, ...savedItems.filter((saved) => saved.id !== item.id)],
-  });
-}
-
-async function removeItem(id) {
-  const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
-  await chrome.storage.local.set({ savedItems: savedItems.filter((item) => item.id !== id) });
+function setBusy(isBusy) {
+  analyzeButton.disabled = isBusy;
+  statusText.textContent = isBusy ? "Extracting article and building reading cards..." : "";
 }
 
 function createActionButton(label, onClick) {
@@ -153,27 +153,6 @@ function createBlock(className, text) {
   element.className = className;
   element.textContent = text || "";
   return element;
-}
-
-function createSourceLink(item) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "source-link";
-  if (!item.url) {
-    wrapper.textContent = item.title || "";
-    return wrapper;
-  }
-  const link = document.createElement("a");
-  link.href = item.url;
-  link.target = "_blank";
-  link.rel = "noreferrer";
-  link.textContent = item.title ? `From: ${item.title}` : "Open article";
-  wrapper.append(link);
-  return wrapper;
-}
-
-function formatSavedDate(savedAt) {
-  if (!savedAt) return "";
-  return `Saved ${new Date(savedAt).toLocaleDateString()}`;
 }
 
 function highlightSource(source, active) {

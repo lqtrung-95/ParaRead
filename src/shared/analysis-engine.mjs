@@ -11,11 +11,12 @@ const PATTERNS = [
   { re: /\bwill|would|could|should|might|may|must\b/i, note: "Modal verb: shows possibility, obligation, prediction, or attitude." },
 ];
 
-export function buildLocalAnalysis(article, targetLanguage = "your target language", explanationLanguage = targetLanguage) {
+export function buildLocalAnalysis(article, targetLanguage = "your target language", explanationLanguage = targetLanguage, sourceLanguage = "Auto") {
   const sentences = article.sentences?.length ? article.sentences : splitSentences(article.text);
   return {
     title: article.title,
     url: article.url,
+    sourceLanguage,
     targetLanguage,
     explanationLanguage,
     generatedBy: "local",
@@ -48,12 +49,15 @@ function extractJson(rawText) {
   return start >= 0 && end > start ? text.slice(start, end + 1) : text;
 }
 
-export function createProviderPrompt(article, targetLanguage, explanationLanguage = targetLanguage) {
+export function createProviderPrompt(article, targetLanguage, explanationLanguage = targetLanguage, sourceLanguage = "Auto") {
   const sample = splitSentences(article.text, MAX_ANALYSIS_SENTENCES).join("\n");
   return [
     `You are ParaRead, a concise language-learning reader.`,
-    `Translate each source sentence into: ${targetLanguage}.`,
-    `Write grammar explanations in the learner's mother tongue: ${explanationLanguage}.`,
+    `Source article language: ${sourceLanguage}. If Auto, infer it from the source sentences only.`,
+    `Translate every "parallel" field into exactly this language: ${targetLanguage}.`,
+    `Write every "grammar" field in exactly this language: ${explanationLanguage}.`,
+    `Do not translate the "parallel" field into ${explanationLanguage} unless it is also the target language.`,
+    `Do not write the "grammar" field in ${targetLanguage} unless it is also the explanation language.`,
     `Return strict JSON: {"cards":[{"source":"","parallel":"","grammar":"","vocabulary":[""]}]}.`,
     `Translate naturally, explain grammar in context, and keep each grammar note under 22 words in ${explanationLanguage}.`,
     `Article title: ${article.title}`,

@@ -14,6 +14,8 @@ Chrome extension that extracts article text from the active page, opens a side p
 - Manifest V3 unpacked extension
 - Configurable OpenAI-compatible LLM provider
 - DeepSeek `deepseek-v4-flash` as cost-efficient default provider/model
+- Sidebar-only analysis flow
+- User-configurable source article language
 - User-configurable target translation language
 - User-configurable mother tongue for grammar explanations
 - Local fallback analysis when no API key configured

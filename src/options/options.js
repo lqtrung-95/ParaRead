@@ -2,6 +2,7 @@ const defaults = {
   providerUrl: "https://api.deepseek.com/chat/completions",
   model: "deepseek-v4-flash",
   apiKey: "",
+  sourceLanguage: "Auto",
   targetLanguage: "",
   explanationLanguage: "",
 };
@@ -10,6 +11,7 @@ const fields = {
   providerUrl: document.querySelector("#provider-url"),
   model: document.querySelector("#model"),
   apiKey: document.querySelector("#api-key"),
+  sourceLanguage: document.querySelector("#source-language"),
   targetLanguage: document.querySelector("#target-language"),
   explanationLanguage: document.querySelector("#explanation-language"),
 };

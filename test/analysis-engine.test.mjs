@@ -18,11 +18,13 @@ test("createProviderPrompt requests strict JSON", () => {
   const prompt = createProviderPrompt({
     title: "Prompt Test",
     text: "This is a short article. It has two sentences.",
-  }, "Vietnamese", "Vietnamese");
+  }, "Chinese", "Vietnamese", "English");
 
   assert.match(prompt, /Return strict JSON/);
-  assert.match(prompt, /Translate each source sentence into: Vietnamese/);
-  assert.match(prompt, /mother tongue: Vietnamese/);
+  assert.match(prompt, /Source article language: English/);
+  assert.match(prompt, /parallel" field into exactly this language: Chinese/);
+  assert.match(prompt, /grammar" field in exactly this language: Vietnamese/);
+  assert.match(prompt, /Do not translate the "parallel" field into Vietnamese/);
 });
 
 test("buildLocalAnalysis does not force a specific default target language", () => {

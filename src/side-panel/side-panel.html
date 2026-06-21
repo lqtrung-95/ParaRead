@@ -13,8 +13,34 @@
         <span class="mark">P</span>
         <div>
           <div id="title" class="title">ParaRead</div>
-          <div id="meta" class="muted">Analyze an article from the popup.</div>
+          <div id="meta" class="muted">Open an article and analyze it here.</div>
         </div>
+      </section>
+      <section class="reader-setup" aria-label="Reader setup">
+        <label class="compact-field">
+          <span>Article</span>
+          <input id="source-language" list="language-options" placeholder="Auto">
+        </label>
+        <label class="compact-field">
+          <span>Translate to</span>
+          <input id="target-language" list="language-options" placeholder="Chinese">
+        </label>
+        <label class="compact-field">
+          <span>Explain in</span>
+          <input id="explanation-language" list="language-options" placeholder="Vietnamese">
+        </label>
+        <datalist id="language-options">
+          <option value="Auto"></option>
+          <option value="English"></option>
+          <option value="Vietnamese"></option>
+          <option value="Chinese"></option>
+          <option value="Spanish"></option>
+          <option value="French"></option>
+          <option value="Japanese"></option>
+          <option value="Korean"></option>
+        </datalist>
+        <button id="analyze-button" type="button">Analyze article</button>
+        <div id="status" class="panel-status" role="status"></div>
       </section>
       <nav class="reader-tabs" aria-label="Reader views">
         <button id="read-tab" class="tab-button active" type="button">Read</button>

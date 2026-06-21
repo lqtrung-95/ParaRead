@@ -6,6 +6,7 @@
 - OpenAI-compatible provider settings
 - User-configurable target language
 - User-configurable explanation language
+- Sidebar-only setup and analysis flow
 - Translation-first side panel with source highlighting
 - Local saved vocabulary and sentence review
 

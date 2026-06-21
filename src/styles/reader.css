@@ -5,6 +5,40 @@
   margin-top: 14px;
 }
 
+.reader-setup {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.compact-field {
+  display: grid;
+  gap: 5px;
+}
+
+.compact-field span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.compact-field input {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.panel-status {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 18px;
+}
+
 .tab-button,
 .secondary-button {
   background: #eef4f5;
@@ -94,4 +128,30 @@
   border-radius: 8px;
   color: var(--muted);
   padding: 18px;
+}
+
+.loading-card {
+  min-height: 132px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-card::before,
+.loading-card::after {
+  background: #e9eef0;
+  border-radius: 999px;
+  content: "";
+  left: 14px;
+  position: absolute;
+  right: 14px;
+}
+
+.loading-card::before {
+  height: 18px;
+  top: 28px;
+}
+
+.loading-card::after {
+  height: 46px;
+  top: 64px;
 }
