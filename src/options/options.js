@@ -1,0 +1,40 @@
+const defaults = {
+  providerUrl: "https://api.deepseek.com/chat/completions",
+  model: "deepseek-v4-flash",
+  apiKey: "",
+  targetLanguage: "",
+};
+
+const fields = {
+  providerUrl: document.querySelector("#provider-url"),
+  model: document.querySelector("#model"),
+  apiKey: document.querySelector("#api-key"),
+  targetLanguage: document.querySelector("#target-language"),
+};
+const statusText = document.querySelector("#status");
+
+loadSettings();
+
+document.querySelector("#save-button").addEventListener("click", async () => {
+  await chrome.storage.local.set(readForm());
+  statusText.textContent = "Saved.";
+});
+
+document.querySelector("#clear-key-button").addEventListener("click", async () => {
+  fields.apiKey.value = "";
+  await chrome.storage.local.set({ apiKey: "" });
+  statusText.textContent = "API key cleared.";
+});
+
+async function loadSettings() {
+  const settings = await chrome.storage.local.get(defaults);
+  Object.entries(fields).forEach(([key, input]) => {
+    input.value = settings[key] || "";
+  });
+}
+
+function readForm() {
+  return Object.fromEntries(
+    Object.entries(fields).map(([key, input]) => [key, input.value.trim()]),
+  );
+}

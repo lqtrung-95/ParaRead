@@ -1,0 +1,175 @@
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7;
+  --panel: #ffffff;
+  --ink: #202124;
+  --muted: #666b73;
+  --line: #dedbd2;
+  --accent: #176b87;
+  --accent-strong: #0e4d64;
+  --warm: #c56b2c;
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+button:hover {
+  background: var(--accent-strong);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+a {
+  color: var(--accent-strong);
+}
+
+.shell {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mark {
+  align-items: center;
+  background: var(--warm);
+  border-radius: 8px;
+  color: white;
+  display: inline-flex;
+  font-weight: 900;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field input,
+.field select {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  padding: 9px 10px;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+}
+
+.status {
+  color: var(--muted);
+  min-height: 20px;
+}
+
+.card-list {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.reader-header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: 14px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sentence-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.source {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.parallel {
+  border-left: 3px solid var(--accent);
+  color: #1d4f60;
+  padding-left: 10px;
+}
+
+.grammar {
+  color: #5f3b20;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  background: #edf3f5;
+  border-radius: 999px;
+  color: #244c59;
+  font-size: 12px;
+  padding: 4px 8px;
+}

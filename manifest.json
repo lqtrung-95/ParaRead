@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ParaRead",
+  "description": "Parallel-text reader with grammar explanations for web articles.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "scripting", "sidePanel", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "ParaRead"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "options_page": "src/options/options.html",
+  "side_panel": {
+    "default_path": "src/side-panel/side-panel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

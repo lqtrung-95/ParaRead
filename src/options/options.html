@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../styles/app.css">
+    <title>ParaRead Settings</title>
+  </head>
+  <body>
+    <main class="shell" style="max-width: 720px">
+      <section class="brand">
+        <span class="mark">P</span>
+        <div>
+          <div class="title">ParaRead Settings</div>
+          <div class="muted">Optional OpenAI-compatible provider</div>
+        </div>
+      </section>
+      <label class="field">
+        <span>Provider URL</span>
+        <input id="provider-url" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Model</span>
+        <input id="model" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>API key</span>
+        <input id="api-key" type="password" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Default target language</span>
+        <input id="target-language" autocomplete="off">
+      </label>
+      <div class="actions">
+        <button id="save-button">Save</button>
+        <button id="clear-key-button" type="button">Clear key</button>
+      </div>
+      <div id="status" class="status" role="status"></div>
+    </main>
+    <script type="module" src="./options.js"></script>
+  </body>
+</html>

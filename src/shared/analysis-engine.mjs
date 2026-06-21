@@ -1,0 +1,75 @@
+import { splitSentences } from "./article-extractor.mjs";
+
+const PATTERNS = [
+  { re: /\b(was|were|is|are|been|being)\s+\w+(ed|en|itten|own|ade|uilt)\b/i, note: "Passive voice: focus is on what happened, not who did it." },
+  { re: /\b(if|unless|provided that|as long as)\b/i, note: "Conditional clause: this sentence sets a condition before the main idea." },
+  { re: /\balthough|though|however|nevertheless|despite\b/i, note: "Contrast marker: compare the two ideas around this connector." },
+  { re: /\bwho|which|that|where\b/i, note: "Relative clause: extra information modifies a noun before it." },
+  { re: /\b(has|have|had)\s+\w+ed\b/i, note: "Perfect aspect: connects a past action to a later reference point." },
+  { re: /\bwill|would|could|should|might|may|must\b/i, note: "Modal verb: shows possibility, obligation, prediction, or attitude." },
+];
+
+export function buildLocalAnalysis(article, targetLanguage = "your target language") {
+  const sentences = article.sentences?.length ? article.sentences : splitSentences(article.text);
+  return {
+    title: article.title,
+    url: article.url,
+    targetLanguage,
+    generatedBy: "local",
+    cards: sentences.slice(0, 12).map((sentence, index) => ({
+      id: `s-${index + 1}`,
+      source: sentence,
+      parallel: buildLearningParaphrase(sentence, targetLanguage),
+      grammar: findGrammarNote(sentence),
+      vocabulary: pickVocabulary(sentence),
+    })),
+  };
+}
+
+export function parseProviderCards(rawText, fallbackArticle, targetLanguage) {
+  try {
+    const parsed = JSON.parse(extractJson(rawText));
+    if (Array.isArray(parsed.cards)) return parsed;
+  } catch {
+    return buildLocalAnalysis(fallbackArticle, targetLanguage);
+  }
+  return buildLocalAnalysis(fallbackArticle, targetLanguage);
+}
+
+function extractJson(rawText) {
+  const text = String(rawText || "").trim();
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced) return fenced[1].trim();
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  return start >= 0 && end > start ? text.slice(start, end + 1) : text;
+}
+
+export function createProviderPrompt(article, targetLanguage) {
+  const sample = splitSentences(article.text, 12).join("\n");
+  return [
+    `You are ParaRead, a concise language-learning reader.`,
+    `Target language for explanations and translations: ${targetLanguage}.`,
+    `Return strict JSON: {"cards":[{"source":"","parallel":"","grammar":"","vocabulary":[""]}]}.`,
+    `Translate naturally, explain grammar in context, and keep each grammar note under 22 words.`,
+    `Article title: ${article.title}`,
+    `Sentences:\n${sample}`,
+  ].join("\n\n");
+}
+
+function findGrammarNote(sentence) {
+  return PATTERNS.find((pattern) => pattern.re.test(sentence))?.note ||
+    "Main clause: identify the subject, verb, and object before reading details.";
+}
+
+function pickVocabulary(sentence) {
+  const words = sentence
+    .replace(/[^\p{L}\p{N}\s'-]/gu, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 6);
+  return [...new Set(words)].slice(0, 4);
+}
+
+function buildLearningParaphrase(sentence, targetLanguage) {
+  return `(${targetLanguage}) Configure an AI provider for full translation. Reading gist: ${sentence}`;
+}

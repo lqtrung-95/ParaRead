@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../styles/app.css">
+    <title>ParaRead</title>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="brand">
+        <span class="mark">P</span>
+        <div>
+          <div class="title">ParaRead</div>
+          <div class="muted">Parallel reading for this page</div>
+        </div>
+      </section>
+      <label class="field">
+        <span>Explain and translate to</span>
+        <input id="target-language" list="language-options" placeholder="e.g. Vietnamese, English, Japanese">
+      </label>
+      <datalist id="language-options">
+        <option value="Vietnamese"></option>
+        <option value="English"></option>
+        <option value="Spanish"></option>
+        <option value="French"></option>
+        <option value="Japanese"></option>
+        <option value="Korean"></option>
+        <option value="Chinese"></option>
+      </datalist>
+      <div class="actions">
+        <button id="analyze-button">Analyze article</button>
+        <button id="options-button" type="button">Settings</button>
+      </div>
+      <div id="status" class="status" role="status"></div>
+    </main>
+    <script type="module" src="./popup.js"></script>
+  </body>
+</html>

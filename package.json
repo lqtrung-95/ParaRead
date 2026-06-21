@@ -1,0 +1,11 @@
+{
+  "name": "pararead",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/shared/article-extractor.mjs && node --check src/shared/analysis-engine.mjs && node --check src/background/service-worker.js && node --check src/content/content-script.js && node --check src/popup/popup.js && node --check src/options/options.js && node --check src/side-panel/side-panel.js"
+  },
+  "devDependencies": {}
+}
