@@ -11,6 +11,7 @@ export function createReaderCard(card, index, context) {
     createBlock("card-topline", `Lens ${index + 1}`),
     createBlock("parallel primary-text", card.parallel),
     createPronunciation(card.pronunciation),
+    createBlock("meaning-text", card.meaning),
     createBlock("source source-muted", card.source),
     createLensDetails(card),
     createVocabulary(card, context),

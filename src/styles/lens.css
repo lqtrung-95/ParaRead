@@ -50,6 +50,16 @@
   line-height: 1.4;
 }
 
+.meaning-text {
+  color: #37515b;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.meaning-text:empty {
+  display: none;
+}
+
 .literal-note:empty,
 .example-list:empty {
   display: none;

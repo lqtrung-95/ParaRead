@@ -8,7 +8,6 @@
   grid-template-columns: 1fr 1fr;
   margin-top: 10px;
 }
-
 .reader-setup {
   border-top: 1px solid var(--line);
   display: grid;
@@ -130,6 +129,7 @@
 .chip-button[data-state="saved"] {
   background: #e8f6ef;
   color: #1d6a42;
+  cursor: default;
 }
 
 .secondary-button[data-state="error"],
