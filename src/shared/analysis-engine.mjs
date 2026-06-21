@@ -40,6 +40,24 @@ export function parseProviderCards(rawText, fallbackArticle, targetLanguage, exp
   return buildLocalAnalysis(fallbackArticle, targetLanguage, explanationLanguage);
 }
 
+export function needsGrammarLanguageRepair(analysis, targetLanguage, explanationLanguage) {
+  if (!/chinese/i.test(targetLanguage) || !/vietnamese/i.test(explanationLanguage)) return false;
+  return (analysis.cards || []).some((card) => hasCjkText(card.grammar));
+}
+
+export function createGrammarRepairPrompt(analysis, targetLanguage, explanationLanguage) {
+  return [
+    `Rewrite only the "grammar" fields in strict JSON.`,
+    `The translated sentence language is: ${targetLanguage}.`,
+    `The grammar explanation language must be: ${explanationLanguage}.`,
+    `Explain the grammar of the translated ${targetLanguage} sentence in ${explanationLanguage}.`,
+    `Example: "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
+    `Keep source, parallel, and vocabulary unchanged.`,
+    `Return strict JSON with the same shape: {"cards":[{"source":"","parallel":"","grammar":"","vocabulary":[""]}]}.`,
+    JSON.stringify({ cards: analysis.cards || [] }),
+  ].join("\n\n");
+}
+
 function extractJson(rawText) {
   const text = String(rawText || "").trim();
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -47,6 +65,10 @@ function extractJson(rawText) {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   return start >= 0 && end > start ? text.slice(start, end + 1) : text;
+}
+
+function hasCjkText(value) {
+  return /[\u3400-\u9fff]/u.test(String(value || ""));
 }
 
 export function createProviderPrompt(article, targetLanguage, explanationLanguage = targetLanguage, sourceLanguage = "Auto") {

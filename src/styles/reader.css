@@ -1,5 +1,5 @@
 .reader-header {
-  padding: 10px 14px 12px;
+  padding: 8px 12px 10px;
 }
 
 .reader-tabs {
@@ -12,10 +12,10 @@
 .reader-setup {
   border-top: 1px solid var(--line);
   display: grid;
-  gap: 7px;
+  gap: 6px;
   grid-template-columns: 1fr 1fr;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
 }
 
 .compact-field {
@@ -40,14 +40,15 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
-  padding: 7px 9px;
+  min-height: 30px;
+  padding: 5px 8px;
   width: 100%;
 }
 
 .panel-status {
   color: var(--muted);
-  font-size: 12px;
-  min-height: 18px;
+  font-size: 11px;
+  min-height: 15px;
 }
 
 .tab-button,
@@ -55,7 +56,7 @@
   background: #eef4f5;
   color: #1f5867;
   font-size: 12px;
-  padding: 7px 9px;
+  padding: 6px 8px;
 }
 
 .tab-button.active {

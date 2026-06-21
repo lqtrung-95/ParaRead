@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildLocalAnalysis, createProviderPrompt, parseProviderCards } from "../src/shared/analysis-engine.mjs";
+import {
+  buildLocalAnalysis,
+  createGrammarRepairPrompt,
+  createProviderPrompt,
+  needsGrammarLanguageRepair,
+  parseProviderCards,
+} from "../src/shared/analysis-engine.mjs";
 
 test("buildLocalAnalysis creates sentence cards with grammar notes", () => {
   const analysis = buildLocalAnalysis({
@@ -53,4 +59,19 @@ test("buildLocalAnalysis keeps long articles instead of stopping at the first sc
   const analysis = buildLocalAnalysis({ title: "Long", text });
 
   assert.equal(analysis.cards.length, 48);
+});
+
+test("needsGrammarLanguageRepair catches Chinese grammar when explanation should be Vietnamese", () => {
+  assert.equal(needsGrammarLanguageRepair({
+    cards: [{ grammar: "“看似...的”表示不确定的推测。" }],
+  }, "Chinese", "Vietnamese"), true);
+});
+
+test("createGrammarRepairPrompt preserves translated grammar intent", () => {
+  const prompt = createGrammarRepairPrompt({
+    cards: [{ source: "x", parallel: "看似...", grammar: "wrong", vocabulary: ["看似"] }],
+  }, "Chinese", "Vietnamese");
+
+  assert.match(prompt, /Rewrite only the "grammar" fields/);
+  assert.match(prompt, /看似\.\.\.的" biểu thị một sự suy đoán không chắc chắn/);
 });
