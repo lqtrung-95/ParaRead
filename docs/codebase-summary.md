@@ -11,6 +11,8 @@ Core behavior:
 - Side panel is the main app surface; extension icon opens it directly.
 - Let the learner choose source, translation, and explanation languages.
 - Grammar notes explain the translated target-language sentence in the learner's mother tongue.
+- CJK translations can include pronunciation readings such as pinyin.
+- Side panel language fields use searchable dropdown controls.
 - Article extraction skips hidden content and AI-summary widgets.
 - Render translation-first cards in the side panel.
 - Hovering a card highlights the matching original paragraph.

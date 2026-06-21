@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="../styles/app.css">
     <link rel="stylesheet" href="../styles/reader.css">
+    <link rel="stylesheet" href="../styles/language-selector.css">
     <title>ParaRead Reader</title>
   </head>
   <body>
@@ -19,26 +20,16 @@
       <section class="reader-setup" aria-label="Reader setup">
         <label class="compact-field">
           <span>Article</span>
-          <input id="source-language" list="language-options" placeholder="Auto">
+          <input id="source-language" class="language-input" placeholder="Auto" autocomplete="off">
         </label>
         <label class="compact-field">
           <span>Translate to</span>
-          <input id="target-language" list="language-options" placeholder="Chinese">
+          <input id="target-language" class="language-input" placeholder="Chinese" autocomplete="off">
         </label>
         <label class="compact-field">
           <span>Explain in</span>
-          <input id="explanation-language" list="language-options" placeholder="Vietnamese">
+          <input id="explanation-language" class="language-input" placeholder="Vietnamese" autocomplete="off">
         </label>
-        <datalist id="language-options">
-          <option value="Auto"></option>
-          <option value="English"></option>
-          <option value="Vietnamese"></option>
-          <option value="Chinese"></option>
-          <option value="Spanish"></option>
-          <option value="French"></option>
-          <option value="Japanese"></option>
-          <option value="Korean"></option>
-        </datalist>
         <button id="analyze-button" type="button">Analyze article</button>
         <div id="status" class="panel-status" role="status"></div>
       </section>

@@ -30,6 +30,8 @@ test("createProviderPrompt requests strict JSON", () => {
   assert.match(prompt, /Source article language: English/);
   assert.match(prompt, /parallel" field into exactly this language: Chinese/);
   assert.match(prompt, /grammar" field in exactly this language: Vietnamese/);
+  assert.match(prompt, /Chinese = pinyin with tone marks/);
+  assert.match(prompt, /"pronunciation"/);
   assert.match(prompt, /explain grammar, particles, word order, or phrasing in the Chinese translation/);
   assert.match(prompt, /vocabulary" array must contain useful words or phrases from the Chinese translation/);
   assert.match(prompt, /Do not translate the "parallel" field into Vietnamese/);
@@ -69,9 +71,10 @@ test("needsGrammarLanguageRepair catches Chinese grammar when explanation should
 
 test("createGrammarRepairPrompt preserves translated grammar intent", () => {
   const prompt = createGrammarRepairPrompt({
-    cards: [{ source: "x", parallel: "看似...", grammar: "wrong", vocabulary: ["看似"] }],
+    cards: [{ source: "x", parallel: "看似...", pronunciation: "kàn sì", grammar: "wrong", vocabulary: ["看似"] }],
   }, "Chinese", "Vietnamese");
 
   assert.match(prompt, /Rewrite only the "grammar" fields/);
+  assert.match(prompt, /Keep source, parallel, pronunciation, and vocabulary unchanged/);
   assert.match(prompt, /看似\.\.\.的" biểu thị một sự suy đoán không chắc chắn/);
 });

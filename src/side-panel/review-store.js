@@ -15,6 +15,7 @@ export async function saveItem(type, card, analysis, word = "") {
     type,
     text,
     context: type === "vocab" ? card.source : card.parallel,
+    pronunciation: card.pronunciation || "",
     grammar: card.grammar,
     url: analysis?.url || "",
     title: analysis?.title || "",
@@ -33,6 +34,7 @@ function createSavedItem(item) {
   section.append(
     createBlock("card-topline", item.type === "vocab" ? "Vocabulary" : "Sentence"),
     createBlock("primary-text", item.text),
+    createBlock("pronunciation", item.pronunciation || ""),
     createBlock("source-muted", item.context || ""),
     createBlock("grammar-note", item.grammar || ""),
     createSourceLink(item),

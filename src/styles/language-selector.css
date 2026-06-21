@@ -1,0 +1,33 @@
+.language-menu {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(38, 54, 64, 0.16);
+  display: grid;
+  left: 0;
+  max-height: 188px;
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 4;
+}
+
+.language-menu:empty {
+  display: none;
+}
+
+.language-option {
+  background: #fff;
+  border-radius: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.language-option:hover {
+  background: #eef4f5;
+  color: #123f4d;
+}

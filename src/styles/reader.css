@@ -21,6 +21,7 @@
 .compact-field {
   display: grid;
   gap: 4px;
+  position: relative;
 }
 
 .compact-field:first-child,
@@ -87,6 +88,17 @@
   font-size: 15px;
   font-weight: 750;
   line-height: 1.45;
+}
+
+.pronunciation {
+  color: #58717a;
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.pronunciation:empty {
+  display: none;
 }
 
 .source-muted {

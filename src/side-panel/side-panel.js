@@ -1,3 +1,4 @@
+import { attachLanguageSelector } from "./language-selector.js";
 import { renderSavedItems, saveItem } from "./review-store.js";
 
 const title = document.querySelector("#title");
@@ -17,6 +18,7 @@ let currentView = "read";
 init();
 
 async function init() {
+  [sourceLanguage, targetLanguage, explanationLanguage].forEach(attachLanguageSelector);
   await loadSettings();
   await render();
 }
@@ -101,12 +103,19 @@ function createCard(card, index) {
   section.append(
     createBlock("card-topline", `Sentence ${index + 1}`),
     createBlock("parallel primary-text", card.parallel),
+    createPronunciation(card.pronunciation),
     createBlock("source source-muted", card.source),
     createBlock("grammar grammar-note", card.grammar),
     createVocabulary(card),
     createSaveRow(card),
   );
   return section;
+}
+
+function createPronunciation(pronunciation) {
+  const element = createBlock("pronunciation", pronunciation);
+  element.hidden = !pronunciation;
+  return element;
 }
 
 function createVocabulary(card) {
