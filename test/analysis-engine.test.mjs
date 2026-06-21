@@ -24,6 +24,8 @@ test("createProviderPrompt requests strict JSON", () => {
   assert.match(prompt, /Source article language: English/);
   assert.match(prompt, /parallel" field into exactly this language: Chinese/);
   assert.match(prompt, /grammar" field in exactly this language: Vietnamese/);
+  assert.match(prompt, /explain grammar, particles, word order, or phrasing in the Chinese translation/);
+  assert.match(prompt, /vocabulary" array must contain useful words or phrases from the Chinese translation/);
   assert.match(prompt, /Do not translate the "parallel" field into Vietnamese/);
 });
 

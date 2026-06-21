@@ -1,6 +1,21 @@
 (() => {
   const BLOCK_SELECTOR = "article, main, [role='main'], .article, .post, .entry-content";
-  const NOISE_SELECTOR = "script, style, nav, footer, aside, form, noscript, svg";
+  const NOISE_SELECTOR = [
+    "script",
+    "style",
+    "nav",
+    "footer",
+    "aside",
+    "form",
+    "noscript",
+    "svg",
+    "[hidden]",
+    "[aria-hidden='true']",
+    "[data-editable='aiSummary']",
+    ".article__ai-summary-wrapper",
+    ".ai-article-summary",
+    "[class*='ai-summary']",
+  ].join(",");
   const HIGHLIGHT_CLASS = "pararead-source-highlight";
   let highlightedNode = null;
 
@@ -18,19 +33,18 @@
   });
 
   function extractArticle() {
-    const root = pickReadableRoot().cloneNode(true);
-    root.querySelectorAll(NOISE_SELECTOR).forEach((node) => node.remove());
+    const root = pickReadableRoot();
     const title = clean(
       document.querySelector("meta[property='og:title']")?.content ||
         document.querySelector("h1")?.textContent ||
         document.title ||
         "Untitled article",
     );
-    const text = [...root.querySelectorAll("p, h2, h3, li, blockquote")]
+    const text = getReadableTextNodes(root)
       .map((node) => clean(node.textContent))
       .filter((value) => value.length > 40)
       .join(" ");
-    const fallbackText = clean(root.textContent);
+    const fallbackText = getVisibleText(root);
     return { title, url: location.href, text: clean(text || fallbackText) };
   }
 
@@ -42,15 +56,33 @@
   }
 
   function scoreElement(element) {
-    const textLength = clean(element.textContent).length;
-    const paragraphCount = element.querySelectorAll("p").length;
+    const readableNodes = getReadableTextNodes(element);
+    const textLength = readableNodes.reduce((sum, node) => sum + clean(node.textContent).length, 0);
+    const paragraphCount = readableNodes.filter((node) => node.matches("p")).length;
     const linkLength = [...element.querySelectorAll("a")]
+      .filter(isVisibleContentNode)
       .reduce((sum, link) => sum + clean(link.textContent).length, 0);
     return textLength + paragraphCount * 80 - linkLength * 1.8;
   }
 
   function clean(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function getReadableTextNodes(root) {
+    return [...root.querySelectorAll("p, h1, h2, h3, li, blockquote")]
+      .filter(isVisibleContentNode);
+  }
+
+  function getVisibleText(root) {
+    return clean(getReadableTextNodes(root).map((node) => node.textContent).join(" "));
+  }
+
+  function isVisibleContentNode(node) {
+    if (!node || node.closest(NOISE_SELECTOR)) return false;
+    const style = getComputedStyle(node);
+    if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) === 0) return false;
+    return node.getClientRects().length > 0;
   }
 
   function highlightSource(source, active) {
@@ -71,6 +103,7 @@
   function findClosestSourceNode(source) {
     const needle = clean(source).slice(0, 120);
     return [...document.querySelectorAll("p, h1, h2, h3, li, blockquote")]
+      .filter(isVisibleContentNode)
       .find((node) => clean(node.textContent).includes(needle));
   }
 

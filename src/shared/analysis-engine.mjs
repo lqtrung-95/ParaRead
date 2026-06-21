@@ -56,10 +56,12 @@ export function createProviderPrompt(article, targetLanguage, explanationLanguag
     `Source article language: ${sourceLanguage}. If Auto, infer it from the source sentences only.`,
     `Translate every "parallel" field into exactly this language: ${targetLanguage}.`,
     `Write every "grammar" field in exactly this language: ${explanationLanguage}.`,
+    `The "grammar" field must explain grammar, particles, word order, or phrasing in the ${targetLanguage} translation, not grammar in the source article sentence.`,
+    `The "vocabulary" array must contain useful words or phrases from the ${targetLanguage} translation, not from the source article sentence.`,
     `Do not translate the "parallel" field into ${explanationLanguage} unless it is also the target language.`,
     `Do not write the "grammar" field in ${targetLanguage} unless it is also the explanation language.`,
     `Return strict JSON: {"cards":[{"source":"","parallel":"","grammar":"","vocabulary":[""]}]}.`,
-    `Translate naturally, explain grammar in context, and keep each grammar note under 22 words in ${explanationLanguage}.`,
+    `Translate naturally, explain the translated sentence in context, and keep each grammar note under 22 words in ${explanationLanguage}.`,
     `Article title: ${article.title}`,
     `Sentences:\n${sample}`,
   ].join("\n\n");

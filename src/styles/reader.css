@@ -1,21 +1,32 @@
+.reader-header {
+  padding: 10px 14px 12px;
+}
+
 .reader-tabs {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   grid-template-columns: 1fr 1fr;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .reader-setup {
   border-top: 1px solid var(--line);
   display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 14px;
+  gap: 7px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 10px;
+  padding-top: 10px;
 }
 
 .compact-field {
   display: grid;
-  gap: 5px;
+  gap: 4px;
+}
+
+.compact-field:first-child,
+.reader-setup button,
+.panel-status {
+  grid-column: 1 / -1;
 }
 
 .compact-field span {
@@ -29,7 +40,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
-  padding: 8px 10px;
+  padding: 7px 9px;
   width: 100%;
 }
 
@@ -44,7 +55,7 @@
   background: #eef4f5;
   color: #1f5867;
   font-size: 12px;
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 .tab-button.active {
