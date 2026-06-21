@@ -10,6 +10,7 @@ const readerInsights = document.querySelector("#reader-insights");
 const readTab = document.querySelector("#read-tab");
 const reviewTab = document.querySelector("#review-tab");
 const analyzeButton = document.querySelector("#analyze-button");
+const providerSettingsButton = document.querySelector("#provider-settings-button");
 const statusText = document.querySelector("#status");
 const sourceLanguage = document.querySelector("#source-language");
 const targetLanguage = document.querySelector("#target-language");
@@ -17,6 +18,7 @@ const explanationLanguage = document.querySelector("#explanation-language");
 
 let currentAnalysis = null;
 let currentView = "read";
+let hasProvider = false;
 
 init();
 
@@ -30,6 +32,7 @@ async function init() {
 readTab.addEventListener("click", () => switchView("read"));
 reviewTab.addEventListener("click", () => switchView("review"));
 analyzeButton.addEventListener("click", analyzeArticle);
+providerSettingsButton.addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "session" && Object.keys(changes).some((key) => key.startsWith("analysis:"))) render();
@@ -49,7 +52,8 @@ async function loadSettings() {
   sourceLanguage.value = settings.sourceLanguage || "Auto";
   targetLanguage.value = settings.targetLanguage === "Auto" ? "" : settings.targetLanguage || "";
   explanationLanguage.value = settings.explanationLanguage === "Auto" ? "" : settings.explanationLanguage || settings.targetLanguage || "";
-  statusText.textContent = settings.apiKey ? "Provider ready" : "Local mode: add API key in Settings for full translation.";
+  hasProvider = Boolean(settings.apiKey);
+  renderProviderStatus();
 }
 
 async function analyzeArticle() {
@@ -131,6 +135,13 @@ function renderLoading() {
 function setBusy(isBusy) {
   analyzeButton.disabled = isBusy;
   statusText.textContent = isBusy ? "Extracting article and building reading cards..." : "";
+  if (!isBusy) renderProviderStatus();
+}
+
+function renderProviderStatus() {
+  statusText.textContent = hasProvider
+    ? "AI provider ready."
+    : "Local preview only. Add an API key for full translation.";
 }
 
 function createBlock(className, text) {

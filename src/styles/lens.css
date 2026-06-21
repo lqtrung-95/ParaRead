@@ -5,6 +5,29 @@
   margin-top: 8px;
 }
 
+.provider-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+  min-height: 28px;
+}
+
+.provider-settings-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: #1f5867;
+  flex: 0 0 auto;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.provider-settings-button:hover {
+  background: #eef4f5;
+  color: #123f4d;
+}
+
 .lens-details {
   background: #fff9f2;
   border: 1px solid #eed8c4;
