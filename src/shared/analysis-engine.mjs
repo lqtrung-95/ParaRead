@@ -42,8 +42,8 @@ export function parseProviderCards(rawText, fallbackArticle, targetLanguage, exp
 }
 
 export function needsGrammarLanguageRepair(analysis, targetLanguage, explanationLanguage) {
-  if (!/chinese/i.test(targetLanguage) || !/vietnamese/i.test(explanationLanguage)) return false;
-  return (analysis.cards || []).some((card) => hasCjkText(card.grammar));
+  if (!/vietnamese/i.test(explanationLanguage)) return false;
+  return (analysis.cards || []).some((card) => needsVietnameseGrammarRepair(card.grammar, targetLanguage));
 }
 
 export function createGrammarRepairPrompt(analysis, targetLanguage, explanationLanguage) {
@@ -52,6 +52,7 @@ export function createGrammarRepairPrompt(analysis, targetLanguage, explanationL
     `The translated sentence language is: ${targetLanguage}.`,
     `The grammar explanation language must be: ${explanationLanguage}.`,
     `Explain the grammar of the translated ${targetLanguage} sentence in ${explanationLanguage}.`,
+    `For Vietnamese explanations, use natural Vietnamese with diacritics.`,
     `Example: "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
     `Keep source, parallel, pronunciation, and vocabulary unchanged.`,
     `Return strict JSON with the same shape: {"cards":[{"source":"","parallel":"","pronunciation":"","grammar":"","vocabulary":[""]}]}.`,
@@ -72,6 +73,22 @@ function hasCjkText(value) {
   return /[\u3400-\u9fff]/u.test(String(value || ""));
 }
 
+function needsVietnameseGrammarRepair(value, targetLanguage) {
+  const text = String(value || "").trim();
+  if (!text) return false;
+  if (hasVietnameseExplanation(text)) return false;
+  if (/chinese/i.test(targetLanguage) && hasCjkText(text)) return true;
+  return true;
+}
+
+function hasVietnameseExplanation(value) {
+  const text = ` ${String(value || "").toLowerCase()} `;
+  if (/[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/iu.test(text)) {
+    return true;
+  }
+  return /\b(là|biểu thị|thể hiện|cấu trúc|dùng để|mang nghĩa|nhấn mạnh|cho thấy|trong câu)\b/iu.test(text);
+}
+
 export function createProviderPrompt(article, targetLanguage, explanationLanguage = targetLanguage, sourceLanguage = "Auto") {
   const sample = splitSentences(article.text, MAX_ANALYSIS_SENTENCES).join("\n");
   return [
@@ -80,6 +97,7 @@ export function createProviderPrompt(article, targetLanguage, explanationLanguag
     `Translate every "parallel" field into exactly this language: ${targetLanguage}.`,
     `Write every "grammar" field in exactly this language: ${explanationLanguage}.`,
     `The "grammar" field must explain grammar, particles, word order, or phrasing in the ${targetLanguage} translation, not grammar in the source article sentence.`,
+    `If ${explanationLanguage} is Vietnamese, write natural Vietnamese with diacritics, e.g. "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
     `The "vocabulary" array must contain useful words or phrases from the ${targetLanguage} translation, not from the source article sentence.`,
     `Add "pronunciation" for target languages with useful readings: Chinese = pinyin with tone marks, Japanese = kana or romaji reading, Korean = romanization. Otherwise use "".`,
     `Do not translate the "parallel" field into ${explanationLanguage} unless it is also the target language.`,

@@ -1,5 +1,6 @@
 import { attachLanguageSelector } from "./language-selector.js";
-import { renderSavedItems, saveItem } from "./review-store.js";
+import { createSaveButton } from "./save-feedback.js";
+import { createSavedItemId, getSavedItemIds, renderSavedItems, saveItem } from "./review-store.js";
 
 const title = document.querySelector("#title");
 const meta = document.querySelector("#meta");
@@ -30,7 +31,10 @@ analyzeButton.addEventListener("click", analyzeArticle);
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "session" && Object.keys(changes).some((key) => key.startsWith("analysis:"))) render();
-  if (area === "local" && changes.savedItems && currentView === "review") renderSavedItems(cards);
+  if (area === "local" && changes.savedItems) {
+    if (currentView === "review") renderSavedItems(cards);
+    else renderCards();
+  }
 });
 
 async function loadSettings() {
@@ -80,23 +84,24 @@ async function render() {
   title.textContent = currentAnalysis.title || "ParaRead";
   meta.textContent = `${currentAnalysis.sourceLanguage || "Auto"} → ${currentAnalysis.targetLanguage || "target"} · grammar in ${currentAnalysis.explanationLanguage || "target"} · ${currentAnalysis.generatedBy || "local"}`;
   if (currentView === "review") await renderSavedItems(cards);
-  else renderCards();
+  else await renderCards();
 }
 
-function switchView(view) {
+async function switchView(view) {
   currentView = view;
   readTab.classList.toggle("active", view === "read");
   reviewTab.classList.toggle("active", view === "review");
-  if (view === "review") renderSavedItems(cards);
-  else renderCards();
+  if (view === "review") await renderSavedItems(cards);
+  else await renderCards();
 }
 
-function renderCards() {
+async function renderCards() {
   if (!currentAnalysis) return;
-  cards.replaceChildren(...currentAnalysis.cards.map(createCard));
+  const savedIds = await getSavedItemIds();
+  cards.replaceChildren(...currentAnalysis.cards.map((card, index) => createCard(card, index, savedIds)));
 }
 
-function createCard(card, index) {
+function createCard(card, index, savedIds) {
   const section = document.createElement("section");
   section.className = "sentence-card reader-card";
   section.addEventListener("mouseenter", () => highlightSource(card.source, true));
@@ -107,8 +112,8 @@ function createCard(card, index) {
     createPronunciation(card.pronunciation),
     createBlock("source source-muted", card.source),
     createBlock("grammar grammar-note", card.grammar),
-    createVocabulary(card),
-    createSaveRow(card),
+    createVocabulary(card, savedIds),
+    createSaveRow(card, savedIds),
   );
   return section;
 }
@@ -119,26 +124,32 @@ function createPronunciation(pronunciation) {
   return element;
 }
 
-function createVocabulary(card) {
+function createVocabulary(card, savedIds) {
   const wrapper = document.createElement("div");
   wrapper.className = "chips";
   (card.vocabulary || []).forEach((word) => {
-    const chip = createSaveButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word));
-    chip.className = "chip chip-button";
-    wrapper.append(chip);
+    const saved = savedIds.has(createSavedItemId("vocab", word, currentAnalysis?.url || ""));
+    wrapper.append(createSaveButton(`+ ${word}`, () => saveItem("vocab", card, currentAnalysis, word), {
+      className: "chip chip-button",
+      saved,
+      savedLabel: `Saved ${word}`,
+    }));
   });
   return wrapper;
 }
 
-function createSaveRow(card) {
+function createSaveRow(card, savedIds) {
   const row = document.createElement("div");
   row.className = "save-row";
-  row.append(createSaveButton("Save sentence", () => saveItem("sentence", card, currentAnalysis)));
+  const saved = savedIds.has(createSavedItemId("sentence", card.source, currentAnalysis?.url || ""));
+  row.append(createSaveButton("Save sentence", () => saveItem("sentence", card, currentAnalysis), { saved }));
   return row;
 }
 
 function renderLoading() {
-  switchView("read");
+  currentView = "read";
+  readTab.classList.add("active");
+  reviewTab.classList.remove("active");
   title.textContent = "Analyzing article...";
   meta.textContent = `${sourceLanguage.value || "Auto"} → ${targetLanguage.value} · grammar in ${explanationLanguage.value}`;
   cards.replaceChildren(...Array.from({ length: 4 }, () => createBlock("sentence-card loading-card", "")));
@@ -147,37 +158,6 @@ function renderLoading() {
 function setBusy(isBusy) {
   analyzeButton.disabled = isBusy;
   statusText.textContent = isBusy ? "Extracting article and building reading cards..." : "";
-}
-
-function createActionButton(label, onClick) {
-  const button = document.createElement("button");
-  button.className = "secondary-button";
-  button.type = "button";
-  button.textContent = label;
-  button.addEventListener("click", onClick);
-  return button;
-}
-
-function createSaveButton(label, onClick) {
-  const button = createActionButton(label, async () => {
-    const originalLabel = button.textContent;
-    setSaveButtonState(button, "saving", "Saving...");
-    try {
-      await onClick();
-      setSaveButtonState(button, "saved", "Saved");
-      setTimeout(() => setSaveButtonState(button, "", originalLabel), 1400);
-    } catch {
-      setSaveButtonState(button, "error", "Save failed");
-      setTimeout(() => setSaveButtonState(button, "", originalLabel), 2200);
-    }
-  });
-  return button;
-}
-
-function setSaveButtonState(button, state, label) {
-  button.disabled = state === "saving";
-  button.dataset.state = state;
-  button.textContent = label;
 }
 
 function createBlock(className, text) {

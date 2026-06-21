@@ -69,6 +69,18 @@ test("needsGrammarLanguageRepair catches Chinese grammar when explanation should
   }, "Chinese", "Vietnamese"), true);
 });
 
+test("needsGrammarLanguageRepair catches English grammar when explanation should be Vietnamese", () => {
+  assert.equal(needsGrammarLanguageRepair({
+    cards: [{ grammar: '"looks like" indicates uncertainty.' }],
+  }, "Chinese", "Vietnamese"), true);
+});
+
+test("needsGrammarLanguageRepair accepts Vietnamese grammar explanations", () => {
+  assert.equal(needsGrammarLanguageRepair({
+    cards: [{ grammar: '"看似...的" biểu thị một sự suy đoán không chắc chắn.' }],
+  }, "Chinese", "Vietnamese"), false);
+});
+
 test("createGrammarRepairPrompt preserves translated grammar intent", () => {
   const prompt = createGrammarRepairPrompt({
     cards: [{ source: "x", parallel: "看似...", pronunciation: "kàn sì", grammar: "wrong", vocabulary: ["看似"] }],

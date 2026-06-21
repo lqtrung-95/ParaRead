@@ -10,8 +10,11 @@ export async function renderSavedItems(container) {
 export async function saveItem(type, card, analysis, word = "") {
   const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
   const text = type === "vocab" ? word : card.source;
+  const id = createSavedItemId(type, text, analysis?.url || "");
+  const existing = savedItems.find((saved) => saved.id === id);
+  if (existing) return { item: existing, alreadySaved: true };
   const item = {
-    id: `${type}:${text}:${analysis?.url || ""}`,
+    id,
     type,
     text,
     context: type === "vocab" ? card.source : card.parallel,
@@ -26,7 +29,16 @@ export async function saveItem(type, card, analysis, word = "") {
   await chrome.storage.local.set({
     savedItems: [item, ...savedItems.filter((saved) => saved.id !== item.id)],
   });
-  return item;
+  return { item, alreadySaved: false };
+}
+
+export async function getSavedItemIds() {
+  const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
+  return new Set(savedItems.map((item) => item.id));
+}
+
+export function createSavedItemId(type, text, url = "") {
+  return `${type}:${text}:${url}`;
 }
 
 function createSavedItem(item) {
