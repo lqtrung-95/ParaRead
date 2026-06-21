@@ -5,6 +5,7 @@
 - Local fallback grammar explanations
 - OpenAI-compatible provider settings
 - User-configurable target language
+- User-configurable explanation language
 - Translation-first side panel with source highlighting
 - Local saved vocabulary and sentence review
 

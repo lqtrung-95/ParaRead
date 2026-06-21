@@ -24,7 +24,7 @@ async function render() {
     return;
   }
   title.textContent = currentAnalysis.title || "ParaRead";
-  meta.textContent = `${currentAnalysis.targetLanguage || "Target language"} · ${currentAnalysis.generatedBy || "local"}`;
+  meta.textContent = `${currentAnalysis.targetLanguage || "Target language"} · grammar in ${currentAnalysis.explanationLanguage || currentAnalysis.targetLanguage || "target language"} · ${currentAnalysis.generatedBy || "local"}`;
   if (currentView === "review") {
     await renderSavedItems();
     return;
@@ -107,6 +107,8 @@ function createSavedItem(item) {
     createBlock("primary-text", item.text),
     createBlock("source-muted", item.context || ""),
     createBlock("grammar-note", item.grammar || ""),
+    createSourceLink(item),
+    createBlock("saved-date", formatSavedDate(item.savedAt)),
     createActionButton("Remove", () => removeItem(item.id)),
   );
   return section;
@@ -123,6 +125,8 @@ async function saveItem(type, card, word = "") {
     grammar: card.grammar,
     url: currentAnalysis?.url || "",
     title: currentAnalysis?.title || "",
+    targetLanguage: currentAnalysis?.targetLanguage || "",
+    explanationLanguage: currentAnalysis?.explanationLanguage || "",
     savedAt: Date.now(),
   };
   await chrome.storage.local.set({
@@ -149,6 +153,27 @@ function createBlock(className, text) {
   element.className = className;
   element.textContent = text || "";
   return element;
+}
+
+function createSourceLink(item) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "source-link";
+  if (!item.url) {
+    wrapper.textContent = item.title || "";
+    return wrapper;
+  }
+  const link = document.createElement("a");
+  link.href = item.url;
+  link.target = "_blank";
+  link.rel = "noreferrer";
+  link.textContent = item.title ? `From: ${item.title}` : "Open article";
+  wrapper.append(link);
+  return wrapper;
+}
+
+function formatSavedDate(savedAt) {
+  if (!savedAt) return "";
+  return `Saved ${new Date(savedAt).toLocaleDateString()}`;
 }
 
 function highlightSource(source, active) {

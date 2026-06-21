@@ -18,10 +18,11 @@ test("createProviderPrompt requests strict JSON", () => {
   const prompt = createProviderPrompt({
     title: "Prompt Test",
     text: "This is a short article. It has two sentences.",
-  }, "Vietnamese");
+  }, "Vietnamese", "Vietnamese");
 
   assert.match(prompt, /Return strict JSON/);
-  assert.match(prompt, /Vietnamese/);
+  assert.match(prompt, /Translate each source sentence into: Vietnamese/);
+  assert.match(prompt, /mother tongue: Vietnamese/);
 });
 
 test("buildLocalAnalysis does not force a specific default target language", () => {
@@ -31,6 +32,7 @@ test("buildLocalAnalysis does not force a specific default target language", () 
   });
 
   assert.equal(analysis.targetLanguage, "your target language");
+  assert.equal(analysis.explanationLanguage, "your target language");
 });
 
 test("parseProviderCards accepts fenced JSON responses", () => {

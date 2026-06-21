@@ -3,6 +3,7 @@ const defaults = {
   model: "deepseek-v4-flash",
   apiKey: "",
   targetLanguage: "",
+  explanationLanguage: "",
 };
 
 const fields = {
@@ -10,6 +11,7 @@ const fields = {
   model: document.querySelector("#model"),
   apiKey: document.querySelector("#api-key"),
   targetLanguage: document.querySelector("#target-language"),
+  explanationLanguage: document.querySelector("#explanation-language"),
 };
 const statusText = document.querySelector("#status");
 

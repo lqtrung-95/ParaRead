@@ -15,6 +15,7 @@ Chrome extension that extracts article text from the active page, opens a side p
 - Configurable OpenAI-compatible LLM provider
 - DeepSeek `deepseek-v4-flash` as cost-efficient default provider/model
 - User-configurable target translation language
+- User-configurable mother tongue for grammar explanations
 - Local fallback analysis when no API key configured
 - Article extraction from common semantic HTML
 
@@ -31,4 +32,5 @@ Chrome extension that extracts article text from the active page, opens a side p
 - Side panel displays analysis
 - Options page stores provider settings locally
 - First analysis asks for target language if none configured
+- Review saves include article title and URL
 - Tests cover extraction and local analysis

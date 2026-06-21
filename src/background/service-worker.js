@@ -3,6 +3,7 @@ import { splitSentences } from "../shared/article-extractor.mjs";
 
 const DEFAULT_SETTINGS = {
   targetLanguage: "",
+  explanationLanguage: "",
   providerUrl: "https://api.deepseek.com/chat/completions",
   model: "deepseek-v4-flash",
   apiKey: "",
@@ -47,13 +48,14 @@ async function analyzeActiveTab(targetLanguageOverride) {
 
   const settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.local.get(DEFAULT_SETTINGS)) };
   const targetLanguage = targetLanguageOverride || settings.targetLanguage;
+  const explanationLanguage = settings.explanationLanguage || targetLanguage;
   if (!targetLanguage) {
     return { ok: false, error: "Choose a target language first." };
   }
   const enrichedArticle = { ...article, sentences: splitSentences(article.text) };
   const analysis = settings.apiKey
-    ? await analyzeWithProvider(enrichedArticle, settings, targetLanguage)
-    : buildLocalAnalysis(enrichedArticle, targetLanguage);
+    ? await analyzeWithProvider(enrichedArticle, settings, targetLanguage, explanationLanguage)
+    : buildLocalAnalysis(enrichedArticle, targetLanguage, explanationLanguage);
 
   await chrome.storage.session.set({
     latestTabId: tab.id,
@@ -72,7 +74,7 @@ async function extractFromTab(tabId) {
   }
 }
 
-async function analyzeWithProvider(article, settings, targetLanguage) {
+async function analyzeWithProvider(article, settings, targetLanguage, explanationLanguage) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 45000);
   const response = await fetch(settings.providerUrl, {
@@ -87,18 +89,25 @@ async function analyzeWithProvider(article, settings, targetLanguage) {
       thinking: { type: "disabled" },
       response_format: { type: "json_object" },
       max_tokens: 12000,
-      messages: [{ role: "user", content: createProviderPrompt(article, targetLanguage) }],
+      messages: [{ role: "user", content: createProviderPrompt(article, targetLanguage, explanationLanguage) }],
     }),
   }).finally(() => clearTimeout(timeoutId));
   if (!response.ok) {
-    return { ...buildLocalAnalysis(article, targetLanguage), providerError: `Provider returned ${response.status}.` };
+    return { ...buildLocalAnalysis(article, targetLanguage, explanationLanguage), providerError: `Provider returned ${response.status}.` };
   }
   try {
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content || "";
-    return { ...parseProviderCards(text, article, targetLanguage), generatedBy: "provider" };
+    return {
+      ...parseProviderCards(text, article, targetLanguage, explanationLanguage),
+      title: article.title,
+      url: article.url,
+      targetLanguage,
+      explanationLanguage,
+      generatedBy: "provider",
+    };
   } catch {
-    return { ...buildLocalAnalysis(article, targetLanguage), providerError: "Provider returned invalid JSON." };
+    return { ...buildLocalAnalysis(article, targetLanguage, explanationLanguage), providerError: "Provider returned invalid JSON." };
   }
 }
 

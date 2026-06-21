@@ -72,6 +72,22 @@
   gap: 8px;
 }
 
+.source-link,
+.saved-date {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.source-link a {
+  color: #1f5867;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.source-link a:hover {
+  text-decoration: underline;
+}
+
 .empty-state {
   background: #fff;
   border: 1px dashed var(--line);
