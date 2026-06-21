@@ -1,5 +1,4 @@
 const LANGUAGES = [
-  "Auto",
   "English",
   "Vietnamese",
   "Chinese",
@@ -16,20 +15,21 @@ const LANGUAGES = [
   "Indonesian",
 ];
 
-export function attachLanguageSelector(input) {
+export function attachLanguageSelector(input, options = {}) {
   const menu = document.createElement("div");
   menu.className = "language-menu";
   input.parentElement.append(menu);
-  input.addEventListener("focus", () => renderMenu(input, menu));
-  input.addEventListener("input", () => renderMenu(input, menu));
+  input.addEventListener("focus", () => renderMenu(input, menu, options));
+  input.addEventListener("input", () => renderMenu(input, menu, options));
   document.addEventListener("click", (event) => {
     if (!input.parentElement.contains(event.target)) menu.replaceChildren();
   });
 }
 
-function renderMenu(input, menu) {
+function renderMenu(input, menu, options) {
   const query = input.value.trim().toLowerCase();
-  const matches = LANGUAGES
+  const languages = options.allowAuto ? ["Auto", ...LANGUAGES] : LANGUAGES;
+  const matches = languages
     .filter((language) => language.toLowerCase().includes(query))
     .slice(0, 8);
   menu.replaceChildren(...matches.map((language) => createOption(input, menu, language)));

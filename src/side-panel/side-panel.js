@@ -18,7 +18,8 @@ let currentView = "read";
 init();
 
 async function init() {
-  [sourceLanguage, targetLanguage, explanationLanguage].forEach(attachLanguageSelector);
+  attachLanguageSelector(sourceLanguage, { allowAuto: true });
+  [targetLanguage, explanationLanguage].forEach((input) => attachLanguageSelector(input));
   await loadSettings();
   await render();
 }
@@ -40,8 +41,8 @@ async function loadSettings() {
     apiKey: "",
   });
   sourceLanguage.value = settings.sourceLanguage || "Auto";
-  targetLanguage.value = settings.targetLanguage || "";
-  explanationLanguage.value = settings.explanationLanguage || settings.targetLanguage || "";
+  targetLanguage.value = settings.targetLanguage === "Auto" ? "" : settings.targetLanguage || "";
+  explanationLanguage.value = settings.explanationLanguage === "Auto" ? "" : settings.explanationLanguage || settings.targetLanguage || "";
   statusText.textContent = settings.apiKey ? "Provider ready" : "Local mode: add API key in Settings for full translation.";
 }
 
@@ -49,7 +50,7 @@ async function analyzeArticle() {
   const source = sourceLanguage.value.trim() || "Auto";
   const target = targetLanguage.value.trim();
   const explanation = explanationLanguage.value.trim();
-  if (!target || !explanation) {
+  if (!target || !explanation || target === "Auto" || explanation === "Auto") {
     statusText.textContent = "Choose translate and explanation languages.";
     return;
   }
