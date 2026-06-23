@@ -5,7 +5,7 @@
 .reader-tabs {
   display: grid;
   gap: 6px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   margin-top: 10px;
 }
 .reader-setup {

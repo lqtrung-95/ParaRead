@@ -9,13 +9,18 @@
 - Literal reading, pattern label, grammar note, examples, and vocabulary
 - Local saved vocabulary and sentence review
 - Lightweight learning/known word status
+- Click-to-explain selected text
+- Simple spaced-review queue
+- Local article library
+- Inline lens insertion
+- CSV export
+- Provider presets
 
 ## Next
-- Review scheduling for learning terms
-- Saved article library
-- Inline paragraph lens mode
-- Provider presets
 - Better extraction with Readability-style scoring
+- Better review analytics
+- Anki package export
+- Configurable inline lens behavior
 
 ## Later
 - Sync across devices

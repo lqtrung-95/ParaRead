@@ -23,6 +23,11 @@ Chrome extension that extracts article text from the active page and renders sen
 - Article extraction from common semantic HTML
 - Local saved vocabulary and sentence review
 - Lightweight known-word tracking
+- Selected-text grammar lens analysis
+- Inline paragraph lens insertion
+- Local article library
+- CSV export for saved items
+- Provider presets for common OpenAI-compatible APIs
 
 ## Out Of Scope
 - User accounts
@@ -37,4 +42,7 @@ Chrome extension that extracts article text from the active page and renders sen
 - Cards show grammar lens fields when provider returns them
 - Review saves include article title and URL
 - Saved vocabulary can be marked learning or known
+- Selected page text can be analyzed without analyzing the whole article
+- Review items can be rated to schedule future review
+- Saved items can be exported to CSV
 - Tests cover extraction and local analysis

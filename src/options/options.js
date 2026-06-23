@@ -7,6 +7,13 @@ const defaults = {
   explanationLanguage: "",
 };
 
+const presets = {
+  deepseek: ["https://api.deepseek.com/chat/completions", "deepseek-v4-flash"],
+  openrouter: ["https://openrouter.ai/api/v1/chat/completions", "deepseek/deepseek-chat-v3-0324:free"],
+  openai: ["https://api.openai.com/v1/chat/completions", "gpt-4.1-mini"],
+  gemini: ["https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "gemini-2.0-flash"],
+};
+
 const fields = {
   providerUrl: document.querySelector("#provider-url"),
   model: document.querySelector("#model"),
@@ -15,6 +22,7 @@ const fields = {
   targetLanguage: document.querySelector("#target-language"),
   explanationLanguage: document.querySelector("#explanation-language"),
 };
+const providerPreset = document.querySelector("#provider-preset");
 const statusText = document.querySelector("#status");
 
 loadSettings();
@@ -28,6 +36,13 @@ document.querySelector("#clear-key-button").addEventListener("click", async () =
   fields.apiKey.value = "";
   await chrome.storage.local.set({ apiKey: "" });
   statusText.textContent = "API key cleared.";
+});
+
+providerPreset.addEventListener("change", () => {
+  const preset = presets[providerPreset.value];
+  if (!preset) return;
+  fields.providerUrl.value = preset[0];
+  fields.model.value = preset[1];
 });
 
 async function loadSettings() {

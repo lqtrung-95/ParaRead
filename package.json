@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/shared/article-extractor.mjs && node --check src/shared/analysis-engine.mjs && node --check src/background/service-worker.js && node --check src/content/content-script.js && node --check src/popup/popup.js && node --check src/options/options.js && node --check src/side-panel/side-panel.js && node --check src/side-panel/review-store.js && node --check src/side-panel/language-selector.js && node --check src/side-panel/save-feedback.js && node --check src/side-panel/learning-store.js && node --check src/side-panel/reader-card.js"
+    "check": "node --check src/shared/article-extractor.mjs && node --check src/shared/analysis-engine.mjs && node --check src/background/service-worker.js && node --check src/background/provider-service.js && node --check src/background/storage-service.js && node --check src/content/content-script.js && node --check src/popup/popup.js && node --check src/options/options.js && node --check src/side-panel/side-panel.js && node --check src/side-panel/side-panel-actions.js && node --check src/side-panel/review-store.js && node --check src/side-panel/article-library.js && node --check src/side-panel/export-service.js && node --check src/side-panel/language-selector.js && node --check src/side-panel/save-feedback.js && node --check src/side-panel/learning-store.js && node --check src/side-panel/reader-card.js"
   },
   "devDependencies": {}
 }

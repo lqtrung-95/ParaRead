@@ -29,6 +29,15 @@
       sendResponse({ ok: true });
       return true;
     }
+    if (message?.type === "PARAREAD_GET_SELECTION") {
+      sendResponse(getSelectionPayload());
+      return true;
+    }
+    if (message?.type === "PARAREAD_INSERT_INLINE_LENS") {
+      insertInlineLens(message.card);
+      sendResponse({ ok: true });
+      return true;
+    }
     return false;
   });
 
@@ -46,6 +55,17 @@
       .join(" ");
     const fallbackText = getVisibleText(root);
     return { title, url: location.href, text: clean(text || fallbackText) };
+  }
+
+  function getSelectionPayload() {
+    const selection = getSelection();
+    const text = clean(selection?.toString());
+    return {
+      title: document.title || "Selected text",
+      url: location.href,
+      text,
+      selection: text,
+    };
   }
 
   function pickReadableRoot() {
@@ -118,6 +138,53 @@
         border-radius: 4px !important;
         transition: background 160ms ease, box-shadow 160ms ease !important;
       }
+    `;
+    document.documentElement.append(style);
+  }
+
+  function insertInlineLens(card) {
+    if (!card?.parallel) return;
+    const anchor = getSelection()?.anchorNode?.parentElement?.closest("p, li, blockquote, h1, h2, h3") ||
+      findClosestSourceNode(card.source);
+    if (!anchor) return;
+    ensureInlineStyles();
+    const lens = document.createElement("aside");
+    lens.className = "grammarlens-inline";
+    lens.innerHTML = "";
+    [
+      ["target", card.parallel],
+      ["meaning", card.meaning],
+      ["grammar", `${card.pattern || "Grammar"}: ${card.grammar || ""}`],
+    ].forEach(([name, value]) => {
+      if (!value) return;
+      const row = document.createElement("div");
+      row.className = `grammarlens-inline-${name}`;
+      row.textContent = value;
+      lens.append(row);
+    });
+    anchor.insertAdjacentElement("afterend", lens);
+  }
+
+  function ensureInlineStyles() {
+    if (document.querySelector("#grammarlens-inline-style")) return;
+    const style = document.createElement("style");
+    style.id = "grammarlens-inline-style";
+    style.textContent = `
+      .grammarlens-inline {
+        background: #fff9f2 !important;
+        border: 1px solid #eed8c4 !important;
+        border-left: 4px solid #176b87 !important;
+        border-radius: 8px !important;
+        color: #202124 !important;
+        display: grid !important;
+        font: 14px/1.45 system-ui, sans-serif !important;
+        gap: 6px !important;
+        margin: 12px 0 !important;
+        padding: 10px 12px !important;
+      }
+      .grammarlens-inline-target { color: #123f4d !important; font-weight: 750 !important; }
+      .grammarlens-inline-meaning { color: #37515b !important; }
+      .grammarlens-inline-grammar { color: #6a4428 !important; font-size: 13px !important; }
     `;
     document.documentElement.append(style);
   }

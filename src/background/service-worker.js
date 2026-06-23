@@ -1,11 +1,7 @@
-import {
-  buildLocalAnalysis,
-  createGrammarRepairPrompt,
-  createProviderPrompt,
-  needsGrammarLanguageRepair,
-  parseProviderCards,
-} from "../shared/analysis-engine.mjs";
+import { buildLocalAnalysis } from "../shared/analysis-engine.mjs";
 import { splitSentences } from "../shared/article-extractor.mjs";
+import { analyzeWithProvider } from "./provider-service.js";
+import { rememberArticle } from "./storage-service.js";
 
 const DEFAULT_SETTINGS = {
   sourceLanguage: "Auto",
@@ -31,6 +27,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   if (message?.type === "PARAREAD_GET_ANALYSIS") {
     respondSafely(sendResponse, () => getLatestAnalysis(sender.tab?.id));
+    return true;
+  }
+  if (message?.type === "PARAREAD_ANALYZE_SELECTION") {
+    respondSafely(sendResponse, () => analyzeSelection(message));
+    return true;
+  }
+  if (message?.type === "PARAREAD_INSERT_INLINE_LENS") {
+    respondSafely(sendResponse, () => insertInlineLens(message.card));
     return true;
   }
   if (message?.type === "PARAREAD_HIGHLIGHT_SOURCE") {
@@ -77,8 +81,50 @@ async function analyzeActiveTab(request) {
     latestTabId: tab.id,
     [`analysis:${tab.id}`]: { ...analysis, createdAt: Date.now() },
   });
+  await rememberArticle(analysis);
   await openSidePanel(tab.id);
   return { ok: true, cardCount: analysis.cards.length, generatedBy: analysis.generatedBy };
+}
+
+async function analyzeSelection(request) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return { ok: false, error: "No active tab found." };
+  const selection = await getSelectionFromTab(tab.id);
+  if (!selection.text || selection.text.length < 2) return { ok: false, error: "Select text on the page first." };
+  const settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.local.get(DEFAULT_SETTINGS)) };
+  const sourceLanguage = request.sourceLanguage || settings.sourceLanguage || "Auto";
+  const targetLanguage = request.targetLanguage || settings.targetLanguage;
+  const explanationLanguage = request.explanationLanguage || settings.explanationLanguage || targetLanguage;
+  if (!targetLanguage || !explanationLanguage) return { ok: false, error: "Choose translate and explanation languages." };
+  const article = {
+    title: `Selection from ${selection.title}`,
+    url: selection.url,
+    text: selection.text,
+    sentences: splitSentences(selection.text),
+  };
+  const analysis = settings.apiKey
+    ? await analyzeWithProvider(article, settings, sourceLanguage, targetLanguage, explanationLanguage)
+    : buildLocalAnalysis(article, targetLanguage, explanationLanguage, sourceLanguage);
+  await chrome.storage.session.set({ latestTabId: tab.id, [`analysis:${tab.id}`]: { ...analysis, createdAt: Date.now() } });
+  await rememberArticle(analysis);
+  await openSidePanel(tab.id);
+  return { ok: true, cardCount: analysis.cards.length, generatedBy: analysis.generatedBy };
+}
+
+async function getSelectionFromTab(tabId) {
+  try {
+    return await chrome.tabs.sendMessage(tabId, { type: "PARAREAD_GET_SELECTION" });
+  } catch {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["src/content/content-script.js"] });
+    return chrome.tabs.sendMessage(tabId, { type: "PARAREAD_GET_SELECTION" });
+  }
+}
+
+async function insertInlineLens(card) {
+  const { latestTabId } = await chrome.storage.session.get("latestTabId");
+  if (!latestTabId || !card) return { ok: false, error: "No lens to insert." };
+  await chrome.tabs.sendMessage(latestTabId, { type: "PARAREAD_INSERT_INLINE_LENS", card });
+  return { ok: true };
 }
 
 async function extractFromTab(tabId) {
@@ -88,61 +134,6 @@ async function extractFromTab(tabId) {
     await chrome.scripting.executeScript({ target: { tabId }, files: ["src/content/content-script.js"] });
     return chrome.tabs.sendMessage(tabId, { type: "PARAREAD_EXTRACT_ARTICLE" });
   }
-}
-
-async function analyzeWithProvider(article, settings, sourceLanguage, targetLanguage, explanationLanguage) {
-  const text = await fetchProviderText(settings, createProviderPrompt(article, targetLanguage, explanationLanguage, sourceLanguage));
-  if (!text.ok) {
-    return { ...buildLocalAnalysis(article, targetLanguage, explanationLanguage, sourceLanguage), providerError: text.error };
-  }
-  const parsed = parseProviderCards(text.value, article, targetLanguage, explanationLanguage);
-  const repaired = needsGrammarLanguageRepair(parsed, targetLanguage, explanationLanguage)
-    ? await repairGrammarLanguage(parsed, settings, targetLanguage, explanationLanguage)
-    : parsed;
-  return {
-    ...repaired,
-    title: article.title,
-    url: article.url,
-    sourceLanguage,
-    targetLanguage,
-    explanationLanguage,
-    generatedBy: "provider",
-  };
-}
-
-async function fetchProviderText(settings, prompt) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45000);
-  const response = await fetch(settings.providerUrl, {
-    method: "POST",
-    signal: controller.signal,
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${settings.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: settings.model,
-      thinking: { type: "disabled" },
-      response_format: { type: "json_object" },
-      max_tokens: 12000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  }).finally(() => clearTimeout(timeoutId));
-  if (!response.ok) {
-    return { ok: false, error: `Provider returned ${response.status}.` };
-  }
-  try {
-    const data = await response.json();
-    return { ok: true, value: data.choices?.[0]?.message?.content || "" };
-  } catch {
-    return { ok: false, error: "Provider returned invalid JSON." };
-  }
-}
-
-async function repairGrammarLanguage(analysis, settings, targetLanguage, explanationLanguage) {
-  const text = await fetchProviderText(settings, createGrammarRepairPrompt(analysis, targetLanguage, explanationLanguage));
-  if (!text.ok) return analysis;
-  return parseProviderCards(text.value, analysis, targetLanguage, explanationLanguage);
 }
 
 async function getLatestAnalysis(tabId) {

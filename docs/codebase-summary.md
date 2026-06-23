@@ -15,6 +15,10 @@ Core behavior:
 - Hovering a card highlights the matching original paragraph.
 - Saved vocabulary and sentences are stored locally for review with article title and URL.
 - Vocabulary terms can be marked learning or known in local storage.
+- Selected text can be analyzed into a focused lens.
+- Current lenses can be inserted inline into the source page.
+- Analyzed articles are remembered in a local library.
+- Saved items can be reviewed with simple spaced scheduling and exported to CSV.
 
 Run:
 - `npm run check`

@@ -28,6 +28,17 @@
   color: #123f4d;
 }
 
+.reader-actions {
+  display: grid;
+  gap: 6px;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.reader-actions .secondary-button {
+  padding: 5px 6px;
+}
+
 .lens-details {
   background: #fff9f2;
   border: 1px solid #eed8c4;
@@ -108,6 +119,10 @@
   color: #fff;
 }
 
+.term-pill[data-status="known"] .term-save {
+  opacity: 0.58;
+}
+
 .review-status {
   display: flex;
   gap: 6px;
@@ -128,4 +143,23 @@
 .review-status[data-status="known"] .review-status-button[data-choice="known"] {
   background: #233f4a;
   color: #fff;
+}
+
+.review-rating-row {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.review-rating-row .secondary-button {
+  padding: 5px 6px;
+}
+
+.library-link {
+  color: #123f4d;
+  text-decoration: none;
+}
+
+.library-link:hover {
+  text-decoration: underline;
 }

@@ -33,6 +33,11 @@
           <input id="explanation-language" class="language-input" placeholder="Vietnamese" autocomplete="off">
         </label>
         <button id="analyze-button" type="button">Analyze article</button>
+        <div class="reader-actions">
+          <button id="selection-button" class="secondary-button" type="button">Explain selection</button>
+          <button id="inline-button" class="secondary-button" type="button">Insert inline</button>
+          <button id="export-button" class="secondary-button" type="button">Export CSV</button>
+        </div>
         <div class="provider-row">
           <div id="status" class="panel-status" role="status"></div>
           <button id="provider-settings-button" class="provider-settings-button" type="button">Settings</button>
@@ -41,6 +46,7 @@
       <nav class="reader-tabs" aria-label="Reader views">
         <button id="read-tab" class="tab-button active" type="button">Read</button>
         <button id="review-tab" class="tab-button" type="button">Review</button>
+        <button id="library-tab" class="tab-button" type="button">Library</button>
       </nav>
     </header>
     <main id="cards" class="card-list"></main>
