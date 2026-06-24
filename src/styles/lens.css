@@ -61,13 +61,13 @@
   line-height: 1.4;
 }
 
-.meaning-text {
+.translation-text {
   color: #37515b;
   font-size: 13px;
   line-height: 1.4;
 }
 
-.meaning-text:empty {
+.translation-text:empty {
   display: none;
 }
 

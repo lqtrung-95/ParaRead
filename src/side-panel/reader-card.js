@@ -9,10 +9,9 @@ export function createReaderCard(card, index, context) {
   section.addEventListener("mouseleave", () => context.highlightSource(card.source, false));
   section.append(
     createBlock("card-topline", `Lens ${index + 1}`),
-    createBlock("parallel primary-text", card.parallel),
+    createBlock("source primary-text", card.source),
     createPronunciation(card.pronunciation),
-    createBlock("meaning-text", card.meaning),
-    createBlock("source source-muted", card.source),
+    createBlock("translation-text", card.parallel || card.meaning),
     createLensDetails(card),
     createVocabulary(card, context),
     createSaveRow(card, context),

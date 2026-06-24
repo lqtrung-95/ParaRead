@@ -29,7 +29,7 @@ init();
 
 async function init() {
   attachLanguageSelector(sourceLanguage, { allowAuto: true });
-  [targetLanguage, explanationLanguage].forEach((input) => attachLanguageSelector(input));
+  attachLanguageSelector(explanationLanguage);
   await loadSettings();
   await render();
 }
