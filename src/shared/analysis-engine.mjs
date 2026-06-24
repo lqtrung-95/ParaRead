@@ -39,7 +39,7 @@ export function buildLocalAnalysis(article, targetLanguage = "your language", ex
 export function parseProviderCards(rawText, fallbackArticle, targetLanguage, explanationLanguage = targetLanguage) {
   try {
     const parsed = JSON.parse(extractJson(rawText));
-    if (Array.isArray(parsed.cards)) return parsed;
+    if (Array.isArray(parsed.cards)) return normalizeProviderAnalysis(parsed, fallbackArticle);
   } catch {
     return buildLocalAnalysis(fallbackArticle, targetLanguage, explanationLanguage);
   }
@@ -99,6 +99,7 @@ export function createProviderPrompt(article, targetLanguage, explanationLanguag
   return [
     `You are GrammarLens, a grammar microscope for real web articles.`,
     `Learning language: ${sourceLanguage}. If Auto, infer it from the source sentences and set "learningLanguage" to the detected language name.`,
+    `Keep every "source" field exactly as the original source sentence. Do not add pinyin, romaji, translations, spaces, or readings to "source".`,
     `Translate every "parallel" and "meaning" field into exactly this language: ${explanationLanguage}.`,
     `Write "literal" as a compact word-by-word or structure-preserving reading of the original learning-language sentence.`,
     `Write "pattern" as a short label for the most useful grammar or vocabulary point in the original learning language.`,
@@ -106,13 +107,31 @@ export function createProviderPrompt(article, targetLanguage, explanationLanguag
     `The "grammar" field must explain grammar, particles, word order, vocabulary usage, or phrasing in the original learning-language sentence.`,
     `If ${explanationLanguage} is Vietnamese, write natural Vietnamese with diacritics, e.g. "看似...的" biểu thị một sự suy đoán không chắc chắn.`,
     `The "vocabulary" array must contain useful words or phrases from the original learning-language sentence, not from the translation.`,
-    `The "examples" array must contain up to 2 short examples in the original learning language that reuse the same pattern.`,
-    `Add "pronunciation" for original languages with useful readings: Chinese = pinyin with tone marks, Japanese = kana or romaji reading, Korean = romanization. Otherwise use "".`,
+    `Vocabulary items must stay in the original script only; put readings only in "pronunciation".`,
+    `The "examples" array must contain up to 2 short examples in the original learning language and original script that reuse the same pattern.`,
+    `Add "pronunciation" for readings only: Chinese = pinyin with tone marks, Japanese = kana or romaji reading, Korean = romanization. Otherwise use "".`,
     `Return strict JSON: {"learningLanguage":"","cards":[{"source":"","parallel":"","meaning":"","pronunciation":"","literal":"","pattern":"","grammar":"","examples":[""],"vocabulary":[""]}]}.`,
     `Translate naturally, explain the translated sentence in context, and keep each grammar note under 22 words in ${explanationLanguage}.`,
     `Article title: ${article.title}`,
     `Sentences:\n${sample}`,
   ].join("\n\n");
+}
+
+function normalizeProviderAnalysis(parsed, fallbackArticle) {
+  const sources = getFallbackSources(fallbackArticle);
+  return {
+    ...parsed,
+    cards: parsed.cards.map((card, index) => ({
+      ...card,
+      source: sources[index] || card.source || "",
+    })),
+  };
+}
+
+function getFallbackSources(fallbackArticle) {
+  if (Array.isArray(fallbackArticle?.sentences)) return fallbackArticle.sentences;
+  if (Array.isArray(fallbackArticle?.cards)) return fallbackArticle.cards.map((card) => card.source);
+  return splitSentences(fallbackArticle?.text || "", MAX_ANALYSIS_SENTENCES);
 }
 
 function pickGrammarPattern(sentence) {

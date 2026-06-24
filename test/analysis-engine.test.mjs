@@ -32,6 +32,7 @@ test("createProviderPrompt requests strict JSON", () => {
 
   assert.match(prompt, /Return strict JSON/);
   assert.match(prompt, /Learning language: English/);
+  assert.match(prompt, /Keep every "source" field exactly as the original source sentence/);
   assert.match(prompt, /parallel" and "meaning" field into exactly this language: Vietnamese/);
   assert.match(prompt, /meaning" field into exactly this language: Vietnamese/);
   assert.match(prompt, /literal" as a compact word-by-word/);
@@ -42,6 +43,7 @@ test("createProviderPrompt requests strict JSON", () => {
   assert.match(prompt, /"pronunciation"/);
   assert.match(prompt, /grammar, particles, word order, vocabulary usage, or phrasing in the original learning-language sentence/);
   assert.match(prompt, /vocabulary" array must contain useful words or phrases from the original learning-language sentence/);
+  assert.match(prompt, /Vocabulary items must stay in the original script only/);
   assert.match(prompt, /"learningLanguage"/);
 });
 
@@ -62,6 +64,16 @@ test("parseProviderCards accepts fenced JSON responses", () => {
   }, "Vietnamese");
 
   assert.equal(analysis.cards[0].parallel, "B");
+});
+
+test("parseProviderCards preserves extracted source sentences over provider rewrites", () => {
+  const analysis = parseProviderCards('{"cards":[{"source":"有yǒu一天tiān","parallel":"Một ngày nọ","grammar":"x","vocabulary":["有yǒu"]}]}', {
+    title: "Chinese",
+    sentences: ["有一天"],
+    text: "有一天",
+  }, "Vietnamese");
+
+  assert.equal(analysis.cards[0].source, "有一天");
 });
 
 test("buildLocalAnalysis keeps long articles instead of stopping at the first screen", () => {
