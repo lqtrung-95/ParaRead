@@ -23,7 +23,7 @@
   position: relative;
 }
 
-.compact-field:first-child,
+.compact-field,
 .reader-setup button,
 .panel-status {
   grid-column: 1 / -1;

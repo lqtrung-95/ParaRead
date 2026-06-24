@@ -5,6 +5,7 @@ export async function rememberArticle(analysis) {
     title: analysis.title || "Untitled",
     url: analysis.url || "",
     sourceLanguage: analysis.sourceLanguage || "Auto",
+    learningLanguage: analysis.learningLanguage || analysis.sourceLanguage || "Auto",
     targetLanguage: analysis.targetLanguage || "",
     explanationLanguage: analysis.explanationLanguage || "",
     cardCount: analysis.cards?.length || 0,

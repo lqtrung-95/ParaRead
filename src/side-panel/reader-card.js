@@ -55,7 +55,7 @@ function createVocabulary(card, context) {
 function createTerm(word, card, context) {
   const term = document.createElement("div");
   term.className = "term-pill";
-  const wordId = createWordStatusId(word, context.analysis?.targetLanguage);
+  const wordId = createWordStatusId(word, context.analysis?.learningLanguage || context.analysis?.sourceLanguage);
   const saved = context.savedIds.has(createSavedItemId("vocab", word, context.analysis?.url || ""));
   term.dataset.status = context.wordStatuses[wordId] || "";
   term.append(
@@ -77,7 +77,7 @@ function createStatusButton(status, label, word, term, context) {
   button.type = "button";
   button.textContent = label;
   button.addEventListener("click", async () => {
-    term.dataset.status = await setWordStatus(word, context.analysis?.targetLanguage, status);
+    term.dataset.status = await setWordStatus(word, context.analysis?.learningLanguage || context.analysis?.sourceLanguage, status);
     context.onWordStatusChange();
   });
   return button;

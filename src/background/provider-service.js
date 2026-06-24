@@ -20,6 +20,7 @@ export async function analyzeWithProvider(article, settings, sourceLanguage, tar
     title: article.title,
     url: article.url,
     sourceLanguage,
+    learningLanguage: repaired.learningLanguage || sourceLanguage,
     targetLanguage,
     explanationLanguage,
     generatedBy: "provider",

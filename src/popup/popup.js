@@ -1,4 +1,3 @@
-const targetLanguage = document.querySelector("#target-language");
 const explanationLanguage = document.querySelector("#explanation-language");
 const analyzeButton = document.querySelector("#analyze-button");
 const optionsButton = document.querySelector("#options-button");
@@ -8,16 +7,14 @@ init();
 
 async function init() {
   const settings = await chrome.storage.local.get({ targetLanguage: "", explanationLanguage: "" });
-  targetLanguage.value = settings.targetLanguage;
   explanationLanguage.value = settings.explanationLanguage || settings.targetLanguage;
 }
 
-targetLanguage.addEventListener("change", async () => {
-  await chrome.storage.local.set({ targetLanguage: targetLanguage.value });
-});
-
 explanationLanguage.addEventListener("change", async () => {
-  await chrome.storage.local.set({ explanationLanguage: explanationLanguage.value });
+  await chrome.storage.local.set({
+    explanationLanguage: explanationLanguage.value,
+    targetLanguage: explanationLanguage.value,
+  });
 });
 
 optionsButton.addEventListener("click", () => {
@@ -25,18 +22,13 @@ optionsButton.addEventListener("click", () => {
 });
 
 analyzeButton.addEventListener("click", async () => {
-  if (!targetLanguage.value.trim()) {
-    statusText.textContent = "Choose a target language first.";
-    targetLanguage.focus();
-    return;
-  }
   if (!explanationLanguage.value.trim()) {
-    statusText.textContent = "Choose your mother tongue for grammar explanations.";
+    statusText.textContent = "Choose an explanation language.";
     explanationLanguage.focus();
     return;
   }
   await chrome.storage.local.set({
-    targetLanguage: targetLanguage.value.trim(),
+    targetLanguage: explanationLanguage.value.trim(),
     explanationLanguage: explanationLanguage.value.trim(),
   });
   setBusy(true, "Extracting and analyzing article...");
@@ -44,7 +36,7 @@ analyzeButton.addEventListener("click", async () => {
     await openSidePanel();
     const result = await chrome.runtime.sendMessage({
       type: "PARAREAD_ANALYZE_ACTIVE_TAB",
-      targetLanguage: targetLanguage.value.trim(),
+      targetLanguage: explanationLanguage.value.trim(),
       explanationLanguage: explanationLanguage.value.trim(),
     });
     if (result?.ok) {

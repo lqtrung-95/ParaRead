@@ -13,7 +13,7 @@ function createArticleItem(article) {
   section.append(
     createBlock("card-topline", article.status || "reading"),
     createArticleLink(article),
-    createBlock("source-muted", `${article.cardCount || 0} lenses · ${article.sourceLanguage || "Auto"} → ${article.targetLanguage || ""}`),
+    createBlock("source-muted", `${article.cardCount || 0} lenses · ${article.learningLanguage || article.sourceLanguage || "Auto"} → ${article.explanationLanguage || article.targetLanguage || ""}`),
     createBlock("saved-date", formatDate(article.updatedAt)),
   );
   return section;

@@ -19,7 +19,6 @@ const exportButton = document.querySelector("#export-button");
 const providerSettingsButton = document.querySelector("#provider-settings-button");
 const statusText = document.querySelector("#status");
 const sourceLanguage = document.querySelector("#source-language");
-const targetLanguage = document.querySelector("#target-language");
 const explanationLanguage = document.querySelector("#explanation-language");
 
 let currentAnalysis = null;
@@ -65,7 +64,6 @@ async function loadSettings() {
     apiKey: "",
   });
   sourceLanguage.value = settings.sourceLanguage || "Auto";
-  targetLanguage.value = settings.targetLanguage === "Auto" ? "" : settings.targetLanguage || "";
   explanationLanguage.value = settings.explanationLanguage === "Auto" ? "" : settings.explanationLanguage || settings.targetLanguage || "";
   hasProvider = Boolean(settings.apiKey);
   renderProviderStatus();
@@ -73,10 +71,9 @@ async function loadSettings() {
 
 async function analyzeArticle() {
   const source = sourceLanguage.value.trim() || "Auto";
-  const target = targetLanguage.value.trim();
   const explanation = explanationLanguage.value.trim();
-  if (!target || !explanation || target === "Auto" || explanation === "Auto") {
-    statusText.textContent = "Choose translate and explanation languages.";
+  if (!explanation || explanation === "Auto") {
+    statusText.textContent = "Choose an explanation language.";
     return;
   }
   setBusy(true);
@@ -84,7 +81,7 @@ async function analyzeArticle() {
   const result = await chrome.runtime.sendMessage({
     type: "PARAREAD_ANALYZE_ACTIVE_TAB",
     sourceLanguage: source,
-    targetLanguage: target,
+    targetLanguage: explanation,
     explanationLanguage: explanation,
   });
   if (!result?.ok) {
@@ -104,7 +101,7 @@ async function render() {
     return;
   }
   title.textContent = currentAnalysis.title || "GrammarLens";
-  meta.textContent = `${currentAnalysis.sourceLanguage || "Auto"} → ${currentAnalysis.targetLanguage || "target"} · grammar in ${currentAnalysis.explanationLanguage || "target"} · ${currentAnalysis.generatedBy || "local"}`;
+  meta.textContent = `${getLearningLanguage(currentAnalysis)} → ${currentAnalysis.explanationLanguage || currentAnalysis.targetLanguage || "target"} · ${currentAnalysis.generatedBy || "local"}`;
   await renderInsights();
   if (currentView === "review") await renderSavedItems(cards);
   else await renderCards();
@@ -146,21 +143,19 @@ function renderLoading() {
   reviewTab.classList.remove("active");
   libraryTab.classList.remove("active");
   title.textContent = "Analyzing article...";
-  meta.textContent = `${sourceLanguage.value || "Auto"} → ${targetLanguage.value} · grammar in ${explanationLanguage.value}`;
+  meta.textContent = `${sourceLanguage.value || "Auto"} → ${explanationLanguage.value}`;
   cards.replaceChildren(...Array.from({ length: 4 }, () => createBlock("sentence-card loading-card", "")));
 }
 
 function getLanguages() {
   const sourceLanguageValue = sourceLanguage.value.trim() || "Auto";
-  const targetLanguageValue = targetLanguage.value.trim();
   const explanationLanguageValue = explanationLanguage.value.trim();
-  const target = targetLanguageValue === "Auto" ? "" : targetLanguageValue;
   const explanation = explanationLanguageValue === "Auto" ? "" : explanationLanguageValue;
-  if (!target || !explanation) {
-    statusText.textContent = "Choose translate and explanation languages.";
+  if (!explanation) {
+    statusText.textContent = "Choose an explanation language.";
     return null;
   }
-  return { sourceLanguage: sourceLanguageValue, targetLanguage: target, explanationLanguage: explanation };
+  return { sourceLanguage: sourceLanguageValue, targetLanguage: explanation, explanationLanguage: explanation };
 }
 
 function setBusy(isBusy) {
@@ -188,4 +183,8 @@ function createBlock(className, text) {
 
 function highlightSource(source, active) {
   chrome.runtime.sendMessage({ type: "PARAREAD_HIGHLIGHT_SOURCE", source, active }).catch(() => {});
+}
+
+function getLearningLanguage(analysis) {
+  return analysis.learningLanguage || analysis.sourceLanguage || "Auto";
 }

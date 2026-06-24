@@ -3,7 +3,6 @@ const defaults = {
   model: "deepseek-v4-flash",
   apiKey: "",
   sourceLanguage: "Auto",
-  targetLanguage: "",
   explanationLanguage: "",
 };
 
@@ -19,7 +18,6 @@ const fields = {
   model: document.querySelector("#model"),
   apiKey: document.querySelector("#api-key"),
   sourceLanguage: document.querySelector("#source-language"),
-  targetLanguage: document.querySelector("#target-language"),
   explanationLanguage: document.querySelector("#explanation-language"),
 };
 const providerPreset = document.querySelector("#provider-preset");
@@ -53,7 +51,8 @@ async function loadSettings() {
 }
 
 function readForm() {
-  return Object.fromEntries(
+  const values = Object.fromEntries(
     Object.entries(fields).map(([key, input]) => [key, input.value.trim()]),
   );
+  return { ...values, targetLanguage: values.explanationLanguage };
 }

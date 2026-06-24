@@ -19,8 +19,9 @@ export function createWordStatusId(word, targetLanguage = "") {
 
 export function summarizeLearningState(analysis, wordStatuses) {
   const terms = new Set((analysis?.cards || []).flatMap((card) => card.vocabulary || []));
-  const known = [...terms].filter((term) => wordStatuses[createWordStatusId(term, analysis?.targetLanguage)] === "known").length;
-  const learning = [...terms].filter((term) => wordStatuses[createWordStatusId(term, analysis?.targetLanguage)] === "learning").length;
+  const language = analysis?.learningLanguage || analysis?.sourceLanguage;
+  const known = [...terms].filter((term) => wordStatuses[createWordStatusId(term, language)] === "known").length;
+  const learning = [...terms].filter((term) => wordStatuses[createWordStatusId(term, language)] === "learning").length;
   return { terms: terms.size, known, learning, sentences: analysis?.cards?.length || 0 };
 }
 

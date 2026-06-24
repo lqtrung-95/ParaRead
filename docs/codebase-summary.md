@@ -7,14 +7,14 @@ Core behavior:
 - Segment text into sentence-level grammar lenses.
 - Generate local grammar/vocabulary hints without a network dependency.
 - Optionally call DeepSeek's OpenAI-compatible chat endpoint for richer translation and explanations.
-- Let the learner choose source, translation, and explanation languages.
-- Grammar notes explain the translated target-language sentence in the learner's mother tongue.
+- Let the learner choose a learning-language override and one explanation language.
+- Grammar notes explain the original learning-language sentence in the learner's chosen explanation language.
 - Cards can show translation, pronunciation, original sentence, literal reading, pattern, explanation, examples, and vocabulary.
 - Side panel language fields use searchable dropdown controls.
 - Article extraction skips hidden content and AI-summary widgets.
 - Hovering a card highlights the matching original paragraph.
-- Saved vocabulary and sentences are stored locally for review with article title and URL.
-- Vocabulary terms can be marked learning or known in local storage.
+- Saved vocabulary and sentences are stored locally for review with article title, URL, and learning language.
+- Vocabulary terms can be marked learning or known by learning language in local storage.
 - Selected text can be analyzed into a focused lens.
 - Current lenses can be inserted inline into the source page.
 - Analyzed articles are remembered in a local library.

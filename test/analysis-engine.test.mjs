@@ -16,6 +16,7 @@ test("buildLocalAnalysis creates sentence cards with grammar notes", () => {
   });
 
   assert.equal(analysis.cards.length, 2);
+  assert.equal(analysis.learningLanguage, "Auto");
   assert.match(analysis.cards[0].grammar, /Contrast/);
   assert.match(analysis.cards[0].meaning, /Configure an AI provider/);
   assert.match(analysis.cards[1].grammar, /Passive/);
@@ -30,28 +31,28 @@ test("createProviderPrompt requests strict JSON", () => {
   }, "Chinese", "Vietnamese", "English");
 
   assert.match(prompt, /Return strict JSON/);
-  assert.match(prompt, /Source article language: English/);
-  assert.match(prompt, /parallel" field into exactly this language: Chinese/);
+  assert.match(prompt, /Learning language: English/);
+  assert.match(prompt, /parallel" and "meaning" field into exactly this language: Vietnamese/);
   assert.match(prompt, /meaning" field into exactly this language: Vietnamese/);
   assert.match(prompt, /literal" as a compact word-by-word/);
   assert.match(prompt, /pattern" as a short label/);
   assert.match(prompt, /grammar" field in exactly this language: Vietnamese/);
-  assert.match(prompt, /examples" array must contain up to 2 short Chinese examples/);
+  assert.match(prompt, /examples" array must contain up to 2 short examples in the original learning language/);
   assert.match(prompt, /Chinese = pinyin with tone marks/);
   assert.match(prompt, /"pronunciation"/);
-  assert.match(prompt, /explain grammar, particles, word order, or phrasing in the Chinese translation/);
-  assert.match(prompt, /vocabulary" array must contain useful words or phrases from the Chinese translation/);
-  assert.match(prompt, /Do not translate the "parallel" field into Vietnamese/);
+  assert.match(prompt, /grammar, particles, word order, vocabulary usage, or phrasing in the original learning-language sentence/);
+  assert.match(prompt, /vocabulary" array must contain useful words or phrases from the original learning-language sentence/);
+  assert.match(prompt, /"learningLanguage"/);
 });
 
-test("buildLocalAnalysis does not force a specific default target language", () => {
+test("buildLocalAnalysis does not force a specific default explanation language", () => {
   const analysis = buildLocalAnalysis({
     title: "Sample",
     text: "Readers can choose their own language.",
   });
 
-  assert.equal(analysis.targetLanguage, "your target language");
-  assert.equal(analysis.explanationLanguage, "your target language");
+  assert.equal(analysis.targetLanguage, "your language");
+  assert.equal(analysis.explanationLanguage, "your language");
 });
 
 test("parseProviderCards accepts fenced JSON responses", () => {
@@ -88,12 +89,13 @@ test("needsGrammarLanguageRepair accepts Vietnamese grammar explanations", () =>
   }, "Chinese", "Vietnamese"), false);
 });
 
-test("createGrammarRepairPrompt preserves translated grammar intent", () => {
+test("createGrammarRepairPrompt preserves original-language grammar intent", () => {
   const prompt = createGrammarRepairPrompt({
     cards: [{ source: "x", parallel: "看似...", pronunciation: "kàn sì", grammar: "wrong", vocabulary: ["看似"] }],
   }, "Chinese", "Vietnamese");
 
   assert.match(prompt, /Rewrite only the "grammar" fields/);
+  assert.match(prompt, /Explain grammar from the original learning-language sentence in Vietnamese/);
   assert.match(prompt, /Keep source, parallel, meaning, pronunciation, literal, pattern, examples, and vocabulary unchanged/);
   assert.match(prompt, /看似\.\.\.的" biểu thị một sự suy đoán không chắc chắn/);
 });

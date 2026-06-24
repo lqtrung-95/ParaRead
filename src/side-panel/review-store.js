@@ -1,4 +1,5 @@
 import { createWordStatusId, getWordStatusMap, setWordStatus } from "./learning-store.js";
+import { createReviewCard, createReviewHeader } from "./review-queue.js";
 
 export async function renderSavedItems(container) {
   const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
@@ -11,7 +12,7 @@ export async function renderSavedItems(container) {
   container.replaceChildren(
     createReviewHeader(dueItems.length),
     ...dueItems.slice(0, 6).map((item) => createReviewCard(item)),
-    ...savedItems.sort((a, b) => b.savedAt - a.savedAt).map((item) => createSavedItem(item, wordStatuses)),
+    ...createGroupedSavedItems(savedItems, wordStatuses),
   );
 }
 
@@ -30,6 +31,7 @@ export async function saveItem(type, card, analysis, word = "") {
     grammar: card.grammar,
     url: analysis?.url || "",
     title: analysis?.title || "",
+    learningLanguage: analysis?.learningLanguage || analysis?.sourceLanguage || "",
     targetLanguage: analysis?.targetLanguage || "",
     explanationLanguage: analysis?.explanationLanguage || "",
     savedAt: Date.now(),
@@ -42,55 +44,6 @@ export async function saveItem(type, card, analysis, word = "") {
   return { item, alreadySaved: false };
 }
 
-function createReviewHeader(count) {
-  const section = document.createElement("section");
-  section.className = "sentence-card review-header-card";
-  section.append(
-    createBlock("card-topline", "Review queue"),
-    createBlock("primary-text", count ? `${count} items due now` : "Nothing due now"),
-    createBlock("source-muted", "Use ratings to schedule the next review."),
-  );
-  return section;
-}
-
-function createReviewCard(item) {
-  const section = document.createElement("section");
-  section.className = "sentence-card review-card";
-  section.append(
-    createBlock("card-topline", item.type),
-    createBlock("primary-text", item.text),
-    createBlock("source-muted", item.context || ""),
-    createBlock("grammar-note", item.grammar || ""),
-    createRatingRow(item),
-  );
-  return section;
-}
-
-function createRatingRow(item) {
-  const row = document.createElement("div");
-  row.className = "review-rating-row";
-  [
-    ["forgot", "Again", 0],
-    ["hard", "Hard", 1],
-    ["good", "Good", 3],
-    ["easy", "Easy", 7],
-  ].forEach(([rating, label, days]) => row.append(createActionButton(label, () => rateItem(item.id, rating, days))));
-  return row;
-}
-
-async function rateItem(id, rating, intervalDays) {
-  const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
-  await chrome.storage.local.set({
-    savedItems: savedItems.map((item) => item.id === id ? {
-      ...item,
-      lastRating: rating,
-      intervalDays,
-      dueAt: Date.now() + intervalDays * 86400000,
-      reviewedAt: Date.now(),
-    } : item),
-  });
-}
-
 export async function getSavedItemIds() {
   const { savedItems = [] } = await chrome.storage.local.get({ savedItems: [] });
   return new Set(savedItems.map((item) => item.id));
@@ -98,6 +51,25 @@ export async function getSavedItemIds() {
 
 export function createSavedItemId(type, text, url = "") {
   return `${type}:${text}:${url}`;
+}
+
+function createGroupedSavedItems(savedItems, wordStatuses) {
+  const groups = savedItems.sort((a, b) => b.savedAt - a.savedAt).reduce((groups, item) => {
+    const language = item.learningLanguage || item.sourceLanguage || "Unknown language";
+    groups.set(language, [...(groups.get(language) || []), item]);
+    return groups;
+  }, new Map());
+  return [...groups].flatMap(([language, items]) => [
+    createLanguageHeader(language, items.length),
+    ...items.map((item) => createSavedItem(item, wordStatuses)),
+  ]);
+}
+
+function createLanguageHeader(language, count) {
+  const section = document.createElement("section");
+  section.className = "language-group-header";
+  section.textContent = `${language} · ${count} saved`;
+  return section;
 }
 
 function createSavedItem(item, wordStatuses) {
@@ -142,7 +114,7 @@ function createReviewStatus(item, wordStatuses) {
   const wrapper = document.createElement("div");
   wrapper.className = "review-status";
   if (item.type !== "vocab") return wrapper;
-  const id = createWordStatusId(item.text, item.targetLanguage);
+  const id = createWordStatusId(item.text, item.learningLanguage || item.targetLanguage);
   wrapper.dataset.status = wordStatuses[id] || "";
   wrapper.append(
     createStatusButton("learning", "Learning", item, wrapper),
@@ -153,7 +125,7 @@ function createReviewStatus(item, wordStatuses) {
 
 function createStatusButton(status, label, item, wrapper) {
   const button = createActionButton(label, async () => {
-    wrapper.dataset.status = await setWordStatus(item.text, item.targetLanguage, status);
+    wrapper.dataset.status = await setWordStatus(item.text, item.learningLanguage || item.targetLanguage, status);
   });
   button.classList.add("review-status-button");
   button.dataset.choice = status;

@@ -63,11 +63,8 @@ async function analyzeActiveTab(request) {
 
   const settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.local.get(DEFAULT_SETTINGS)) };
   const sourceLanguage = request.sourceLanguage || settings.sourceLanguage || "Auto";
-  const targetLanguage = request.targetLanguage || settings.targetLanguage;
-  const explanationLanguage = request.explanationLanguage || settings.explanationLanguage || targetLanguage;
-  if (!targetLanguage) {
-    return { ok: false, error: "Choose a target language first." };
-  }
+  const explanationLanguage = request.explanationLanguage || request.targetLanguage || settings.explanationLanguage || settings.targetLanguage;
+  const targetLanguage = explanationLanguage;
   if (!explanationLanguage) {
     return { ok: false, error: "Choose a grammar explanation language first." };
   }
@@ -93,9 +90,9 @@ async function analyzeSelection(request) {
   if (!selection.text || selection.text.length < 2) return { ok: false, error: "Select text on the page first." };
   const settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.local.get(DEFAULT_SETTINGS)) };
   const sourceLanguage = request.sourceLanguage || settings.sourceLanguage || "Auto";
-  const targetLanguage = request.targetLanguage || settings.targetLanguage;
-  const explanationLanguage = request.explanationLanguage || settings.explanationLanguage || targetLanguage;
-  if (!targetLanguage || !explanationLanguage) return { ok: false, error: "Choose translate and explanation languages." };
+  const explanationLanguage = request.explanationLanguage || request.targetLanguage || settings.explanationLanguage || settings.targetLanguage;
+  const targetLanguage = explanationLanguage;
+  if (!explanationLanguage) return { ok: false, error: "Choose an explanation language." };
   const article = {
     title: `Selection from ${selection.title}`,
     url: selection.url,
